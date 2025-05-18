@@ -1,116 +1,98 @@
-"use client";
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
 
-const navLinks = [
+"use client"
+
+import { useState, useEffect } from 'react'
+import { Menu, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+
+const navItems = [
   { name: 'Home', href: '#home' },
   { name: 'About Us', href: '#about' },
   { name: 'Projects', href: '#projects' },
   { name: 'Our Process', href: '#process' },
   { name: 'Contact', href: '#contact' },
-];
+]
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
+      const isScrolled = window.scrollY > 10
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled)
       }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToSection = (sectionId: string) => {
-    setIsOpen(false);
-    const section = document.querySelector(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [scrolled])
 
   return (
-    <nav
-      className={`fixed w-full z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-gray-900/60 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.3)] py-3 border-b border-purple-500/10'
-          : 'bg-transparent py-5'
+    <header 
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-background/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`}
     >
-      <div className="container flex items-center justify-between">
-        <a href="#home" className="flex items-center gap-2">
-          <span className="tech-gradient-text font-bold text-xl md:text-2xl animate-pulse-glow">
-            TechFusion
-          </span>
-        </a>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-4">
+          {/* Logo */}
+          <Link href="/#home" className="flex items-center">
+            <span className="text-2xl font-bold text-gradient">BugFree.dev</span>
+          </Link>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-6">
-          {navLinks.map((link, index) => (
-            <button
-              key={link.name}
-              onClick={() => scrollToSection(link.href)}
-              className="font-medium text-gray-300 hover:text-tech-purple transition-all duration-300 animated-underline"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              {link.name}
-            </button>
-          ))}
-          <Button 
-            onClick={() => scrollToSection('#contact')}
-            className="web3-button"
-          >
-            Get Started
-          </Button>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-            className="text-white hover:bg-purple-500/10"
-          >
-            {isOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-gray-900/90 backdrop-blur-xl absolute top-full left-0 w-full shadow-lg animate-fade-in border-b border-purple-500/10">
-          <div className="container py-4 flex flex-col space-y-4">
-            {navLinks.map((link, index) => (
-              <button
-                key={link.name}
-                onClick={() => scrollToSection(link.href)}
-                className="font-medium text-gray-300 hover:text-tech-purple transition-colors py-2"
-                style={{ animationDelay: `${index * 100}ms` }}
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-sm font-medium text-gray-300 hover:text-primary transition-colors"
               >
-                {link.name}
-              </button>
+                {item.name}
+              </Link>
             ))}
-            <Button 
-              onClick={() => scrollToSection('#contact')}
-              className="web3-button w-full"
-            >
-              Get Started
-            </Button>
-          </div>
+          </nav>
+
+          {/* Mobile menu button */}
+          <button
+            type="button"
+            className="md:hidden text-gray-300 hover:text-white"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <span className="sr-only">Open main menu</span>
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" aria-hidden="true" />
+            ) : (
+              <Menu className="h-6 w-6" aria-hidden="true" />
+            )}
+          </button>
         </div>
-      )}
-    </nav>
-  );
-};
 
-export default Navbar;
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden glass-card rounded-lg mt-2 p-4 animate-fade-in">
+            <div className="flex flex-col space-y-4 py-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-base font-medium text-gray-300 hover:text-primary transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}
 
+export default Navbar
