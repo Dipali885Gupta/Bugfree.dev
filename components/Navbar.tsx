@@ -1,18 +1,12 @@
 
 "use client"
-
+import { navItems } from '@/constants'
 import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-const navItems = [
-  { name: 'Home', href: '#home' },
-  { name: 'About Us', href: '#about' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Our Process', href: '#process' },
-  { name: 'Contact', href: '#contact' },
-]
+
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
