@@ -7,15 +7,16 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Mail, Phone, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
-
+import emailjs from '@emailjs/browser';
 const ContactSection = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    projectBrief: '',
-    budget: '',
-    prototype: ''
-  })
+      name: '',
+      email: '',
+      phone: '',
+      projectBrief: '',
+      budget: '',
+      prototype: ''
+    })
   
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -34,23 +35,72 @@ const ContactSection = () => {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
     // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false)
-      toast.success('Message sent successfully! We\'ll be in touch soon.')
+    try {
+      // EmailJS configuration - Now loaded from environment variables
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID as string;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID as string;
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string;
+
+      // Prepare template parameters for EmailJS
+      const templateParams = {
+        from_name: formData.name,
+        from_email: formData.email,
+        phone_number: formData.phone,
+        project_brief: formData.projectBrief,
+        budget: formData.budget || 'Not specified',
+        prototype: formData.prototype || 'Not provided',
+        to_email: 'dipaligupta885@gmail.com',
+        message: `
+New Contact Form Submission:
+
+Name: ${formData.name}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Budget: ${formData.budget || 'Not specified'}
+Project Brief: ${formData.projectBrief}
+Prototype/Initial Version: ${formData.prototype || 'Not provided'}
+        `
+      };
+
+      console.log('Sending email with EmailJS:', templateParams);
+
+      // Initialize EmailJS (you only need to do this once)
+      emailjs.init(publicKey);
+
+      // Send email using EmailJS
+      const result = await emailjs.send(
+        serviceId,
+        templateId,
+        templateParams
+      );
+
+      console.log('Email sent successfully:', result);
+      
+      toast.success('Message sent successfully! We\'ll be in touch soon.');
+      
+      // Reset form after successful submission
       setFormData({
         name: '',
         email: '',
+        phone: '',
         projectBrief: '',
         budget: '',
         prototype: ''
-      })
-    }, 1500)
-  }
+      });
+      
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error('Failed to send message. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   return (
     <section id="contact" className="section-padding relative">
@@ -58,7 +108,6 @@ const ContactSection = () => {
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-background to-[#121212] opacity-50" />
         <div className="absolute -top-[10%] -right-[5%] w-[20%] h-[20%] rounded-full bg-primary/10 blur-3xl" />
       </div>
-      
       <div className="container mx-auto container-padding relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 opacity-0 animate-fade-in-up">Get In Touch</h2>
@@ -82,7 +131,7 @@ const ContactSection = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="Your name"
+                  placeholder="Your full name"
                   required
                   className="w-full bg-background/50"
                 />
@@ -99,6 +148,22 @@ const ContactSection = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="your.email@example.com"
+                  required
+                  className="w-full bg-background/50"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
+                  Phone Number <span className="text-primary">*</span>
+                </label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+91 XXXXXXXXXX"
                   required
                   className="w-full bg-background/50"
                 />
@@ -152,7 +217,7 @@ const ContactSection = () => {
               </div>
               
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Submit'}
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </div>
@@ -172,8 +237,8 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="text-lg font-medium mb-1">Email</h4>
-                    <a href="mailto:contact@bugfree.dev" className="text-gray-300 hover:text-primary transition-colors">
-                      contact@bugfree.dev
+                    <a href="mailto:dipaligupta885@gmail.com" className="text-gray-300 hover:text-primary transition-colors">
+                      dipaligupta885@gmail.com
                     </a>
                   </div>
                 </div>
@@ -184,8 +249,8 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="text-lg font-medium mb-1">Phone</h4>
-                    <a href="tel:+15555555555" className="text-gray-300 hover:text-primary transition-colors">
-                      +1 (555) 555-5555
+                    <a href="tel:+917077404655" className="text-gray-300 hover:text-primary transition-colors">
+                      +91 7077404655
                     </a>
                   </div>
                 </div>
@@ -197,7 +262,7 @@ const ContactSection = () => {
                   <div>
                     <h4 className="text-lg font-medium mb-1">Location</h4>
                     <p className="text-gray-300">
-                      San Francisco, CA
+                      FortuneTower,Chandrasekharpur, Bhubaneswar
                     </p>
                   </div>
                 </div>
@@ -231,7 +296,9 @@ const ContactSection = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
+  
+
 
 export default ContactSection
