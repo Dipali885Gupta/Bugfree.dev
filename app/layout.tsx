@@ -3,7 +3,7 @@ import './globals.css'
 import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
-  title: "BugFree.dev | AI-Powered Tech Agency",
+  title: "getcodefree.tech",
   description: "Building and shipping products faster with AI. Transform your ideas into exceptional digital experiences.",
 }
 
