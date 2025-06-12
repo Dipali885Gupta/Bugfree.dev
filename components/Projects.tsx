@@ -36,7 +36,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
       </div>
       <div className="p-6">
         <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-        <p className="text-gray-400 mb-4 line-clamp-2">{project.description}</p>
+        <p className="text-gray-400 mb-4">{project.description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
           {project.tags.map((tag) => (
             <span 
@@ -47,12 +47,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
             </span>
           ))}
         </div>
-        <Button asChild variant="outline" size="sm" className="w-full group">
-          <Link href={project.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-            Visit Project
-            <ExternalLink className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </Button>
+        {/* Visit Project button removed as per requirements */}
       </div>
     </div>
   )
@@ -80,13 +75,13 @@ const ProjectsSection = () => {
             <ProjectCard key={project.id} project={project} index={index} />
           ))}
         </div>
-        
+{/*         
         <div className="mt-16 text-center opacity-0 animate-fade-in-up delay-500">
           <Button variant="outline" className="group">
             <span>View All Projects</span>
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-        </div>
+        </div> */}
       </div>
     </section>
   )

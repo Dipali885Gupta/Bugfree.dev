@@ -12,7 +12,7 @@ const Footer = () => {
             <p className="text-gray-400">
               Building and shipping products faster in the AI era. We transform ideas into exceptional digital experiences.
             </p>
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
                 <span className="sr-only">Twitter</span>
@@ -33,7 +33,7 @@ const Footer = () => {
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </a>
-            </div>
+            </div> */}
           </div>
           
           {/* Quick Links */}

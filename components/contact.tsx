@@ -238,7 +238,7 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
                   <div>
                     <h4 className="text-lg font-medium mb-1">Email</h4>
                     <a href="mailto:dipaligupta885@gmail.com" className="text-gray-300 hover:text-primary transition-colors">
-                      dipaligupta885@gmail.com
+                      pandaamitav01@gmail.com
                     </a>
                   </div>
                 </div>
@@ -251,6 +251,10 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
                     <h4 className="text-lg font-medium mb-1">Phone</h4>
                     <a href="tel:+917077404655" className="text-gray-300 hover:text-primary transition-colors">
                       +91 7077404655
+                    </a>
+                    <br />
+                    <a href="tel:+919876543210" className="text-gray-300 hover:text-primary transition-colors">
+                      +91 7735490979
                     </a>
                   </div>
                 </div>
