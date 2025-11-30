@@ -37,17 +37,17 @@ const Footer = ({ siteSettings, footerLinks }: FooterProps) => {
             {socialLinks.length > 0 && (
               <div className="flex space-x-4">
                 {socialLinks.map((link) => {
-                  const IconComponent = link.icon ? socialIconMap[link.icon] : null;
+                  const IconComponent = link.icon_name ? socialIconMap[link.icon_name] : null;
                   return (
                     <a 
                       key={link.id} 
-                      href={link.url} 
+                      href={link.href} 
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-400 hover:text-primary transition-colors"
                     >
                       {IconComponent && <IconComponent className="h-5 w-5" />}
-                      <span className="sr-only">{link.label}</span>
+                      <span className="sr-only">{link.name}</span>
                     </a>
                   );
                 })}
@@ -62,7 +62,7 @@ const Footer = ({ siteSettings, footerLinks }: FooterProps) => {
               {quickLinks.length > 0 ? (
                 quickLinks.map((link) => (
                   <li key={link.id}>
-                    <a href={link.url} className="text-gray-400 hover:text-primary transition-colors">{link.label}</a>
+                    <a href={link.href} className="text-gray-400 hover:text-primary transition-colors">{link.name}</a>
                   </li>
                 ))
               ) : (
@@ -84,7 +84,7 @@ const Footer = ({ siteSettings, footerLinks }: FooterProps) => {
               {services.length > 0 ? (
                 services.map((link) => (
                   <li key={link.id}>
-                    <a href={link.url} className="text-gray-400 hover:text-primary transition-colors">{link.label}</a>
+                    <a href={link.href} className="text-gray-400 hover:text-primary transition-colors">{link.name}</a>
                   </li>
                 ))
               ) : (
@@ -106,7 +106,7 @@ const Footer = ({ siteSettings, footerLinks }: FooterProps) => {
               {legal.length > 0 ? (
                 legal.map((link) => (
                   <li key={link.id}>
-                    <a href={link.url} className="text-gray-400 hover:text-primary transition-colors">{link.label}</a>
+                    <a href={link.href} className="text-gray-400 hover:text-primary transition-colors">{link.name}</a>
                   </li>
                 ))
               ) : (
@@ -127,7 +127,7 @@ const Footer = ({ siteSettings, footerLinks }: FooterProps) => {
           <div className="flex space-x-6 text-sm">
             {bottomLinks.length > 0 ? (
               bottomLinks.map((link) => (
-                <a key={link.id} href={link.url} className="text-gray-400 hover:text-primary transition-colors">{link.label}</a>
+                <a key={link.id} href={link.href} className="text-gray-400 hover:text-primary transition-colors">{link.name}</a>
               ))
             ) : (
               <>

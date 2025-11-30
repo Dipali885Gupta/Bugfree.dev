@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Save, Eye, Plus, Trash2, ExternalLink, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Save, Eye, Plus, Trash2, ExternalLink, Image as ImageIcon, Upload, Play, Video } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Project } from '@/lib/supabase/types'
 import Image from 'next/image'
@@ -15,7 +15,12 @@ export default function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const supabase = createClient()
+  const [isUploading, setIsUploading] = useState(false)
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = useMemo(() => createClient() as any, [])
 
   useEffect(() => {
     fetchProjects()
@@ -44,6 +49,7 @@ export default function ProjectsPage() {
       image_url: '',
       tags: [],
       project_url: '',
+      video_url: '',
       display_order: projects.length + 1,
       is_active: true,
       created_at: '',
@@ -65,6 +71,7 @@ export default function ProjectsPage() {
             image_url: editingProject.image_url,
             tags: editingProject.tags,
             project_url: editingProject.project_url,
+            video_url: editingProject.video_url,
             display_order: editingProject.display_order,
             updated_at: new Date().toISOString(),
           })
@@ -83,6 +90,7 @@ export default function ProjectsPage() {
             image_url: editingProject.image_url,
             tags: editingProject.tags,
             project_url: editingProject.project_url,
+            video_url: editingProject.video_url,
             display_order: editingProject.display_order,
           })
           .select()
@@ -90,7 +98,7 @@ export default function ProjectsPage() {
 
         if (error) throw error
         if (data) {
-          setProjects([...projects, data])
+          setProjects([...projects, data as Project])
           toast.success('Project created successfully')
         }
       }
@@ -124,6 +132,99 @@ export default function ProjectsPage() {
     if (!editingProject) return
     const tags = value.split(',').map(tag => tag.trim()).filter(Boolean)
     setEditingProject({ ...editingProject, tags })
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !editingProject) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB')
+      return
+    }
+
+    setIsUploading(true)
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('project-images')
+        .upload(fileName, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-images')
+        .getPublicUrl(fileName)
+
+      setEditingProject({ ...editingProject, image_url: publicUrl })
+      toast.success('Image uploaded successfully')
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error('Failed to upload image. Make sure storage bucket is set up.')
+    } finally {
+      setIsUploading(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !editingProject) return
+
+    // Validate file type
+    const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']
+    if (!validVideoTypes.includes(file.type)) {
+      toast.error('Please select a valid video file (MP4, WebM, OGG)')
+      return
+    }
+
+    // Validate file size (max 100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('Video size must be less than 100MB')
+      return
+    }
+
+    setIsUploadingVideo(true)
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('project-videos')
+        .upload(fileName, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-videos')
+        .getPublicUrl(fileName)
+
+      setEditingProject({ ...editingProject, video_url: publicUrl })
+      toast.success('Video uploaded successfully')
+    } catch (error) {
+      console.error('Video upload error:', error)
+      toast.error('Failed to upload video. Make sure storage bucket is set up.')
+    } finally {
+      setIsUploadingVideo(false)
+      // Reset file input
+      if (videoInputRef.current) {
+        videoInputRef.current.value = ''
+      }
+    }
   }
 
   if (isLoading) {
@@ -187,14 +288,57 @@ export default function ProjectsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Image URL</label>
+                <label className="text-sm font-medium text-foreground">Project Image</label>
+                
+                {/* File Upload Area */}
+                <div 
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">Uploading...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="w-8 h-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Click to upload image
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        PNG, JPG, GIF up to 5MB
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Or use URL */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or paste URL</span>
+                  </div>
+                </div>
+
                 <Input
                   value={editingProject.image_url || ''}
                   onChange={(e) => setEditingProject({ ...editingProject, image_url: e.target.value })}
                   placeholder="https://images.unsplash.com/..."
                 />
+
+                {/* Image Preview */}
                 {editingProject.image_url && (
-                  <div className="mt-2 rounded-lg overflow-hidden border border-border">
+                  <div className="mt-2 rounded-lg overflow-hidden border border-border relative">
                     <Image
                       src={editingProject.image_url}
                       alt="Preview"
@@ -202,6 +346,13 @@ export default function ProjectsPage() {
                       height={200}
                       className="w-full h-40 object-cover"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setEditingProject({ ...editingProject, image_url: '' })}
+                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 text-white" />
+                    </button>
                   </div>
                 )}
               </div>
@@ -216,12 +367,66 @@ export default function ProjectsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Project URL</label>
+                <label className="text-sm font-medium text-foreground">Project URL (Live Link)</label>
                 <Input
                   value={editingProject.project_url || ''}
                   onChange={(e) => setEditingProject({ ...editingProject, project_url: e.target.value })}
                   placeholder="https://example.com"
                 />
+                <p className="text-xs text-muted-foreground">Leave empty if not available</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Project Video (Demo/Walkthrough)</label>
+                
+                {/* Video Upload Area */}
+                <div 
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => videoInputRef.current?.click()}
+                >
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                  />
+                  {isUploadingVideo ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">Uploading video...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Video className="w-8 h-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Click to upload video
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        MP4, WebM, OGG up to 100MB
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Video Preview */}
+                {editingProject.video_url && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-border relative">
+                    <video
+                      src={editingProject.video_url}
+                      className="w-full h-40 object-cover"
+                      controls
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditingProject({ ...editingProject, video_url: '' })}
+                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">Leave empty if not available</p>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
@@ -302,16 +507,30 @@ export default function ProjectsPage() {
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                {project.project_url && (
-                  <a
-                    href={project.project_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
+                <div className="flex items-center gap-2">
+                  {project.video_url && (
+                    <a
+                      href={project.video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary"
+                      title="Watch Video"
+                    >
+                      <Play className="w-4 h-4" />
+                    </a>
+                  )}
+                  {project.project_url && (
+                    <a
+                      href={project.project_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground"
+                      title="View Project"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -4,6 +4,40 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- ============================================
+-- Storage Bucket for Project Images
+-- ============================================
+
+-- Create storage bucket for project images
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'project-images',
+  'project-images',
+  true,
+  5242880, -- 5MB limit
+  ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+) ON CONFLICT (id) DO NOTHING;
+
+-- Allow public read access to project images
+CREATE POLICY "Public read access for project images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'project-images');
+
+-- Allow authenticated users to upload project images
+CREATE POLICY "Authenticated users can upload project images"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'project-images' AND auth.role() = 'authenticated');
+
+-- Allow authenticated users to update their uploads
+CREATE POLICY "Authenticated users can update project images"
+ON storage.objects FOR UPDATE
+USING (bucket_id = 'project-images' AND auth.role() = 'authenticated');
+
+-- Allow authenticated users to delete project images
+CREATE POLICY "Authenticated users can delete project images"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'project-images' AND auth.role() = 'authenticated');
+
 -- Site Settings (singleton table)
 CREATE TABLE IF NOT EXISTS site_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -74,6 +108,7 @@ CREATE TABLE IF NOT EXISTS projects (
   image_url TEXT,
   tags TEXT[],
   project_url TEXT,
+  video_url TEXT,
   display_order INTEGER NOT NULL DEFAULT 0,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),

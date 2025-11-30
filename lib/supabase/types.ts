@@ -183,6 +183,7 @@ export interface Database {
           image_url: string | null
           tags: string[] | null
           project_url: string | null
+          video_url: string | null
           display_order: number
           is_active: boolean
           created_at: string
@@ -195,6 +196,7 @@ export interface Database {
           image_url?: string | null
           tags?: string[] | null
           project_url?: string | null
+          video_url?: string | null
           display_order: number
           is_active?: boolean
           created_at?: string
@@ -207,6 +209,7 @@ export interface Database {
           image_url?: string | null
           tags?: string[] | null
           project_url?: string | null
+          video_url?: string | null
           display_order?: number
           is_active?: boolean
           created_at?: string
