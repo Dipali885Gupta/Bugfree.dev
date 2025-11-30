@@ -8,7 +8,50 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Mail, Phone, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 import emailjs from '@emailjs/browser';
-const ContactSection = () => {
+import type { ContactSection as ContactSectionType, SiteSettings, FaqItem, BudgetOption } from '@/lib/supabase/types'
+
+// Default FAQ items
+const defaultFaqItems = [
+  { question: 'How long does the development process usually take?', answer: 'Our AI-powered approach typically reduces development time by 60-70%. Most projects are completed within 4-8 weeks depending on complexity.' },
+  { question: 'Do you provide ongoing maintenance?', answer: 'Yes, we offer flexible maintenance plans to keep your product running smoothly and up-to-date.' },
+  { question: 'What technologies do you specialize in?', answer: 'We specialize in modern web and mobile technologies, AI/ML integration, and cloud services.' },
+]
+
+// Default budget options
+const defaultBudgetOptions = [
+  { value: 'less-than-10k', label: 'Less than $10,000' },
+  { value: '10k-25k', label: '$10,000 - $25,000' },
+  { value: '25k-50k', label: '$25,000 - $50,000' },
+  { value: '50k-100k', label: '$50,000 - $100,000' },
+  { value: 'more-than-100k', label: 'More than $100,000' },
+]
+
+interface ContactSectionProps {
+  contactData?: ContactSectionType | null
+  siteSettings?: SiteSettings | null
+  faqItems?: FaqItem[]
+  budgetOptions?: BudgetOption[]
+}
+
+const ContactSection = ({ contactData, siteSettings, faqItems: dbFaqItems, budgetOptions: dbBudgetOptions }: ContactSectionProps) => {
+  // Map database items to component format or use defaults
+  const faqItems = dbFaqItems && dbFaqItems.length > 0 
+    ? dbFaqItems.map(f => ({ question: f.question, answer: f.answer }))
+    : defaultFaqItems
+  
+  const budgetOptions = dbBudgetOptions && dbBudgetOptions.length > 0 
+    ? dbBudgetOptions.map(b => ({ value: b.value, label: b.label }))
+    : defaultBudgetOptions
+  
+  // Default values from props
+  const sectionTitle = contactData?.section_title || 'Get In Touch'
+  const sectionDescription = contactData?.section_description || 'Get in touch with us to bring your product idea to life. We\'re excited to hear about your project!'
+  const formTitle = contactData?.form_title || 'Send Us a Message'
+  const contactDescription = contactData?.contact_description || 'Ready to transform your idea into reality? Reach out to us through any of these channels and we\'ll get back to you promptly.'
+  const email = siteSettings?.primary_email || 'pandaamitav01@gmail.com'
+  const phoneNumbers = siteSettings?.phone_numbers || ['+91 7077404655', '+91 7735490979']
+  const location = siteSettings?.location || 'FortuneTower,Chandrasekharpur, Bhubaneswar'
+
   const [formData, setFormData] = useState({
       name: '',
       email: '',
@@ -110,17 +153,17 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
       </div>
       <div className="container mx-auto container-padding relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 opacity-0 animate-fade-in-up">Get In Touch</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 opacity-0 animate-fade-in-up">{sectionTitle}</h2>
           <div className="w-20 h-1 bg-primary mx-auto mb-6 opacity-0 animate-fade-in-up delay-100"></div>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto opacity-0 animate-fade-in-up delay-200">
-            Get in touch with us to bring your product idea to life. We're excited to hear about your project!
+            {sectionDescription}
           </p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <div className="glass-card rounded-xl p-6 md:p-8 opacity-0 animate-fade-in-up delay-100">
-            <h3 className="text-2xl font-semibold mb-6">Send Us a Message</h3>
+            <h3 className="text-2xl font-semibold mb-6">{formTitle}</h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
@@ -193,11 +236,9 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
                     <SelectValue placeholder="Select budget range" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="less-than-10k">Less than $10,000</SelectItem>
-                    <SelectItem value="10k-25k">$10,000 - $25,000</SelectItem>
-                    <SelectItem value="25k-50k">$25,000 - $50,000</SelectItem>
-                    <SelectItem value="50k-100k">$50,000 - $100,000</SelectItem>
-                    <SelectItem value="more-than-100k">More than $100,000</SelectItem>
+                    {budgetOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -227,7 +268,7 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
             <div>
               <h3 className="text-2xl font-semibold mb-6">Contact Information</h3>
               <p className="text-gray-300 mb-8">
-                Ready to transform your idea into reality? Reach out to us through any of these channels and we'll get back to you promptly.
+                {contactDescription}
               </p>
               
               <div className="space-y-6">
@@ -237,8 +278,8 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
                   </div>
                   <div>
                     <h4 className="text-lg font-medium mb-1">Email</h4>
-                    <a href="mailto:dipaligupta885@gmail.com" className="text-gray-300 hover:text-primary transition-colors">
-                      pandaamitav01@gmail.com
+                    <a href={`mailto:${email}`} className="text-gray-300 hover:text-primary transition-colors">
+                      {email}
                     </a>
                   </div>
                 </div>
@@ -249,13 +290,13 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
                   </div>
                   <div>
                     <h4 className="text-lg font-medium mb-1">Phone</h4>
-                    <a href="tel:+917077404655" className="text-gray-300 hover:text-primary transition-colors">
-                      +91 7077404655
-                    </a>
-                    <br />
-                    <a href="tel:+919876543210" className="text-gray-300 hover:text-primary transition-colors">
-                      +91 7735490979
-                    </a>
+                    {phoneNumbers.map((phone, index) => (
+                      <div key={index}>
+                        <a href={`tel:${phone.replace(/\s/g, '')}`} className="text-gray-300 hover:text-primary transition-colors">
+                          {phone}
+                        </a>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 
@@ -266,7 +307,7 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
                   <div>
                     <h4 className="text-lg font-medium mb-1">Location</h4>
                     <p className="text-gray-300">
-                      FortuneTower,Chandrasekharpur, Bhubaneswar
+                      {location}
                     </p>
                   </div>
                 </div>
@@ -276,24 +317,14 @@ Prototype/Initial Version: ${formData.prototype || 'Not provided'}
             <div className="glass-card rounded-xl p-6 md:p-8">
               <h4 className="text-xl font-semibold mb-4">FAQ</h4>
               <div className="space-y-4">
-                <div>
-                  <h5 className="font-medium mb-2">How long does the development process usually take?</h5>
-                  <p className="text-gray-400">
-                    Our AI-powered approach typically reduces development time by 60-70%. Most projects are completed within 4-8 weeks depending on complexity.
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-medium mb-2">Do you provide ongoing maintenance?</h5>
-                  <p className="text-gray-400">
-                    Yes, we offer flexible maintenance plans to keep your product running smoothly and up-to-date.
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-medium mb-2">What technologies do you specialize in?</h5>
-                  <p className="text-gray-400">
-                    We specialize in modern web and mobile technologies, AI/ML integration, and cloud services.
-                  </p>
-                </div>
+                {faqItems.map((faq, index) => (
+                  <div key={index}>
+                    <h5 className="font-medium mb-2">{faq.question}</h5>
+                    <p className="text-gray-400">
+                      {faq.answer}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

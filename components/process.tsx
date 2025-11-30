@@ -1,18 +1,45 @@
 "use client"
 import React, { useEffect, useRef } from 'react';
-import { MessageCircle, FileSearch, Code, Rocket, LifeBuoy } from 'lucide-react';
-import { processSteps } from '@/constants';
+import { MessageCircle, FileSearch, Code, Rocket, LifeBuoy, Palette, Headphones, Zap, Target, Shield, Clock, Users, Cpu, Globe, Sparkles, Lightbulb, TrendingUp, CheckCircle, MessageSquare } from 'lucide-react';
+import type { ProcessStep as ProcessStepType } from '@/lib/supabase/types';
+
+// Icon mapping for dynamic icon rendering
+const iconMap: { [key: string]: React.ElementType } = {
+  MessageCircle, FileSearch, Code, Rocket, LifeBuoy, Palette, Headphones, Zap, Target, Shield, Clock, Users, Cpu, Globe, Sparkles, Lightbulb, TrendingUp, CheckCircle, MessageSquare
+}
 
 interface ProcessStep {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
   icon: React.ElementType;
 }
 
+// Default process steps
+const defaultProcessSteps: ProcessStep[] = [
+  { id: 1, title: 'Discovery', description: 'We start by understanding your vision, goals, and requirements through in-depth consultation.', icon: MessageCircle },
+  { id: 2, title: 'Design', description: 'Our designers create stunning, user-centric interfaces that align with your brand identity.', icon: Palette },
+  { id: 3, title: 'Development', description: 'Our AI-powered development process ensures rapid, high-quality code delivery.', icon: Code },
+  { id: 4, title: 'Launch', description: 'We deploy your application with automated CI/CD pipelines for seamless releases.', icon: Rocket },
+  { id: 5, title: 'Support', description: 'Ongoing maintenance and support to keep your application running smoothly.', icon: Headphones },
+]
 
-const ProcessSection = () => {
+interface ProcessSectionProps {
+  processSteps?: ProcessStepType[]
+}
+
+const ProcessSection = ({ processSteps: dbProcessSteps }: ProcessSectionProps) => {
   const sectionRef = useRef<HTMLElement>(null);
+  
+  // Map database process steps to component format or use defaults
+  const processSteps: ProcessStep[] = dbProcessSteps && dbProcessSteps.length > 0 
+    ? dbProcessSteps.map(step => ({
+        id: step.id,
+        title: step.title,
+        description: step.description || '',
+        icon: iconMap[step.icon_name] || Zap,
+      }))
+    : defaultProcessSteps
 
   useEffect(() => {
     const observer = new IntersectionObserver(

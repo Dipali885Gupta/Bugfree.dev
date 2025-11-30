@@ -1,9 +1,22 @@
 "use client"
 
 import { useEffect, useRef } from 'react'
-import { Rocket, Zap, ShieldCheck, TrendingUp } from 'lucide-react'
+import { Rocket, Zap, ShieldCheck, TrendingUp, Target, Shield, Clock, Users, Code, Cpu, Globe, Sparkles, Lightbulb, Award, Star, Heart } from 'lucide-react'
 import Image from 'next/image'
-import { featureCards } from '@/constants'
+import type { AboutSection as AboutSectionType, FeatureCard as FeatureCardType } from '@/lib/supabase/types'
+
+// Icon mapping for dynamic icon rendering
+const iconMap: { [key: string]: React.ElementType } = {
+  Rocket, Zap, ShieldCheck, TrendingUp, Target, Shield, Clock, Users, Code, Cpu, Globe, Sparkles, Lightbulb, Award, Star, Heart
+}
+
+// Default feature cards
+const defaultFeatureCards = [
+  { icon: Rocket, title: "Accelerated Development", description: "Our AI-powered approach speeds up development by 3x compared to traditional methods.", delay: "delay-100" },
+  { icon: Zap, title: "Intelligent Solutions", description: "We harness machine learning and AI to build smarter, more efficient products.", delay: "delay-200" },
+  { icon: ShieldCheck, title: "Quality Assured", description: "Rigorous testing and quality control ensures your product is ready for market.", delay: "delay-300" },
+  { icon: TrendingUp, title: "Business Growth", description: "Our products are designed to drive engagement, conversions, and business growth.", delay: "delay-400" },
+]
 
 interface FeatureCardProps {
   title: string
@@ -24,8 +37,35 @@ const FeatureCard = ({ title, description, icon: Icon, delay }: FeatureCardProps
   )
 }
 
-const AboutSection = () => {
+interface AboutSectionProps {
+  aboutData?: AboutSectionType | null
+  featureCards?: FeatureCardType[]
+}
+
+const AboutSection = ({ aboutData, featureCards: dbFeatureCards }: AboutSectionProps) => {
   const sectionRef = useRef<HTMLElement>(null)
+  
+  // Map database feature cards to component format or use defaults
+  const features = dbFeatureCards && dbFeatureCards.length > 0 
+    ? dbFeatureCards.map((card, index) => ({
+        icon: iconMap[card.icon_name] || Zap,
+        title: card.title,
+        description: card.description || '',
+        delay: `delay-${(index + 1) * 100}`,
+      }))
+    : defaultFeatureCards
+  
+  // Default values
+  const sectionTitle = aboutData?.section_title || 'Redefining Product Development'
+  const sectionDescription = aboutData?.section_description || 'We merge cutting-edge AI technologies with expert development to create innovative digital products that outpace traditional development cycles.'
+  const secondaryTitle = aboutData?.secondary_title || 'Why Choose Our AI-Powered Approach?'
+  const secondaryDescription = aboutData?.secondary_description || 'In today\'s rapidly evolving digital landscape, businesses need to move quickly without sacrificing quality. Our agency blends human creativity with artificial intelligence to accelerate every stage of the product development lifecycle.'
+  const imageUrl = aboutData?.image_url || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200'
+  const benefits = aboutData?.benefits || [
+    'Faster time-to-market with AI-accelerated development cycles',
+    'Cost-effective solutions through automation of repetitive tasks',
+    'Data-driven decision making throughout the development process',
+  ]
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -53,16 +93,15 @@ const AboutSection = () => {
       <div className="container mx-auto container-padding">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 opacity-0 animate-fade-in-up">
-            Redefining Product Development
+            {sectionTitle}
           </h2>
           <div className="w-20 h-1 bg-primary mx-auto mb-6 opacity-0 animate-fade-in-up delay-100"></div>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto opacity-0 animate-fade-in-up delay-200">
-            We merge cutting-edge AI technologies with expert development to create innovative digital products 
-            that outpace traditional development cycles.
+            {sectionDescription}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featureCards.map((card, index) => (
+          {features.map((card, index) => (
             <FeatureCard 
               key={index}
               icon={card.icon}
@@ -76,37 +115,25 @@ const AboutSection = () => {
         <div className="mt-20 grid md:grid-cols-2 gap-12 items-center">
           <div className="hidden-element opacity-0">
             <h3 className="text-2xl md:text-3xl font-bold mb-6">
-              Why Choose Our <span className="text-gradient">AI-Powered</span> Approach?
+              {secondaryTitle.includes('AI-Powered') 
+                ? <>Why Choose Our <span className="text-gradient">AI-Powered</span> Approach?</>
+                : secondaryTitle
+              }
             </h3>
             <p className="text-gray-300 mb-6">
-              In today's rapidly evolving digital landscape, businesses need to move quickly without sacrificing quality. 
-              Our agency blends human creativity with artificial intelligence to accelerate every stage of the product development lifecycle.
+              {secondaryDescription}
             </p>
             <ul className="space-y-4">
-              <li className="flex items-start">
-                <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 mr-3">
-                  <svg className="h-3 w-3 text-primary" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <span className="text-gray-300">Faster time-to-market with AI-accelerated development cycles</span>
-              </li>
-              <li className="flex items-start">
-                <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 mr-3">
-                  <svg className="h-3 w-3 text-primary" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <span className="text-gray-300">Cost-effective solutions through automation of repetitive tasks</span>
-              </li>
-              <li className="flex items-start">
-                <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 mr-3">
-                  <svg className="h-3 w-3 text-primary" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <span className="text-gray-300">Data-driven decision making throughout the development process</span>
-              </li>
+              {benefits.map((benefit, index) => (
+                <li key={index} className="flex items-start">
+                  <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 mr-3">
+                    <svg className="h-3 w-3 text-primary" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-300">{benefit}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -116,7 +143,7 @@ const AboutSection = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-blue-500/20"></div>
                 <div className="relative w-full h-full">
                   <Image 
-                    src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200"
+                    src={imageUrl}
                     alt="Team collaborating on AI product development"
                     fill
                     className="object-cover opacity-80"
