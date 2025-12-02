@@ -2,9 +2,22 @@
 import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import type { HeroSection as HeroSectionType } from '@/lib/supabase/types';
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  heroData?: HeroSectionType | null
+}
+
+const HeroSection = ({ heroData }: HeroSectionProps) => {
   const spotlightRef = useRef<HTMLDivElement>(null);
+  
+  // Default values
+  const badgeText = heroData?.badge_text || 'Next Generation Tech Agency'
+  const headline = heroData?.headline || 'Building & Shipping Products Faster with AI'
+  const headlineHighlight = heroData?.headline_highlight || 'Faster'
+  const subheadline = heroData?.subheadline || 'Building and shipping products faster than traditional approaches in the AI era. We transform ideas into exceptional digital experiences.'
+  const ctaText = heroData?.cta_text || 'Get Started'
+  const ctaLink = heroData?.cta_link || '#contact'
 
   useEffect(() => {
     
@@ -48,23 +61,27 @@ const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center">
           <div className="opacity-0 animate-fade-in-up">
             <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium mb-6">
-              Next Generation Tech Agency
+              {badgeText}
             </span>
           </div>
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 opacity-0 animate-fade-in-up delay-100">
-            Building & Shipping Products <span className="text-gradient">Faster</span> with AI
+            {headline.split(headlineHighlight).map((part, i, arr) => (
+              <React.Fragment key={i}>
+                {part}
+                {i < arr.length - 1 && <span className="text-gradient">{headlineHighlight}</span>}
+              </React.Fragment>
+            ))}
           </h1>
           
           <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto opacity-0 animate-fade-in-up delay-200">
-            Building and shipping products faster than traditional approaches in the AI era.
-            We transform ideas into exceptional digital experiences.
+            {subheadline}
           </p>
           
           <div className="opacity-0 animate-fade-in-up delay-300">
             <Button asChild size="lg" className="group">
-              <a href="#contact">
-                Get Started
+              <a href={ctaLink}>
+                {ctaText}
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </a>
             </Button>

@@ -1,16 +1,32 @@
 
 "use client"
-import { navItems } from '@/constants'
 import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import type { NavItem } from '@/lib/supabase/types'
 
+// Default nav items when database is empty
+const defaultNavItems = [
+  { name: 'Home', href: '#home' },
+  { name: 'About Us', href: '#about' },
+  { name: 'Projects', href: '#projects' },
+  { name: 'Our Process', href: '#process' },
+  { name: 'Contact', href: '#contact' },
+]
 
+interface NavbarProps {
+  navItems?: NavItem[]
+  logoText?: string
+}
 
-const Navbar = () => {
+const Navbar = ({ navItems, logoText = 'getcodefree.tech' }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  
+  // Use database items or fallback to defaults
+  const items = navItems && navItems.length > 0 
+    ? navItems.map(item => ({ name: item.name, href: item.href }))
+    : defaultNavItems
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,12 +52,12 @@ const Navbar = () => {
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <Link href="/#home" className="flex items-center">
-            <span className="text-2xl font-bold text-gradient">getcodefree.tech</span>
+            <span className="text-2xl font-bold text-gradient">{logoText}</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
+            {items.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -71,7 +87,7 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden glass-card rounded-lg mt-2 p-4 animate-fade-in">
             <div className="flex flex-col space-y-4 py-2">
-              {navItems.map((item) => (
+              {items.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
