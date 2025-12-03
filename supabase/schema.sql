@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS projects (
   title TEXT NOT NULL,
   description TEXT,
   image_url TEXT,
+  video_url TEXT,
   tags TEXT[],
   project_url TEXT,
   video_url TEXT,

@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       site_settings: {
@@ -43,6 +43,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       nav_items: {
         Row: {
@@ -69,6 +70,7 @@ export interface Database {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       hero_section: {
         Row: {
@@ -107,6 +109,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       about_section: {
         Row: {
@@ -145,6 +148,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       feature_cards: {
         Row: {
@@ -174,6 +178,7 @@ export interface Database {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       projects: {
         Row: {
@@ -181,9 +186,9 @@ export interface Database {
           title: string
           description: string | null
           image_url: string | null
+          video_url: string | null
           tags: string[] | null
           project_url: string | null
-          video_url: string | null
           display_order: number
           is_active: boolean
           created_at: string
@@ -194,10 +199,10 @@ export interface Database {
           title: string
           description?: string | null
           image_url?: string | null
+          video_url?: string | null
           tags?: string[] | null
           project_url?: string | null
-          video_url?: string | null
-          display_order: number
+          display_order?: number
           is_active?: boolean
           created_at?: string
           updated_at?: string
@@ -207,14 +212,15 @@ export interface Database {
           title?: string
           description?: string | null
           image_url?: string | null
+          video_url?: string | null
           tags?: string[] | null
           project_url?: string | null
-          video_url?: string | null
           display_order?: number
           is_active?: boolean
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       process_steps: {
         Row: {
@@ -244,6 +250,7 @@ export interface Database {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       contact_section: {
         Row: {
@@ -276,6 +283,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       faq_items: {
         Row: {
@@ -302,6 +310,7 @@ export interface Database {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       budget_options: {
         Row: {
@@ -328,6 +337,7 @@ export interface Database {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       footer_links: {
         Row: {
@@ -360,6 +370,7 @@ export interface Database {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       contact_submissions: {
         Row: {
@@ -398,6 +409,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       testimonials: {
         Row: {
@@ -454,6 +466,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       admin_profiles: {
         Row: {
@@ -477,6 +490,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
     }
     Views: {
@@ -486,6 +500,9 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }
