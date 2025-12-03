@@ -1,4 +1,4 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from './types'
 
 export function createClient() {
@@ -9,7 +9,7 @@ export function createClient() {
     throw new Error('Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
   }
 
-  return createSupabaseClient<Database>(supabaseUrl, supabaseKey)
+  return createBrowserClient<Database>(supabaseUrl, supabaseKey)
 }
 
 // Export typed client for use in components
