@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Save, Eye, Plus, Trash2, ExternalLink, Image as ImageIcon, Upload, Play, Video } from 'lucide-react'
+import { Loader2, Save, Eye, Plus, Trash2, ExternalLink, Image as ImageIcon, Upload, Play, Video, EyeOff, ArrowUp, ArrowDown } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Project } from '@/lib/supabase/types'
 import Image from 'next/image'
@@ -17,6 +17,7 @@ export default function ProjectsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
+  const [tagsInputValue, setTagsInputValue] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,6 +26,20 @@ export default function ProjectsPage() {
   useEffect(() => {
     fetchProjects()
   }, [])
+
+  // Sync tags input value ONLY when a different project is opened for editing
+  const lastEditingProjectId = useRef<string | null>(null)
+  useEffect(() => {
+    const currentId = editingProject?.id ?? null
+    if (currentId !== lastEditingProjectId.current) {
+      lastEditingProjectId.current = currentId
+      if (editingProject) {
+        setTagsInputValue(editingProject.tags?.join(', ') || '')
+      } else {
+        setTagsInputValue('')
+      }
+    }
+  }, [editingProject])
 
   const fetchProjects = async () => {
     setIsLoading(true)
@@ -50,6 +65,7 @@ export default function ProjectsPage() {
       tags: [],
       project_url: '',
       video_url: '',
+      status: 'In Progress',
       display_order: projects.length + 1,
       is_active: true,
       created_at: '',
@@ -72,7 +88,9 @@ export default function ProjectsPage() {
             tags: editingProject.tags,
             project_url: editingProject.project_url,
             video_url: editingProject.video_url,
+            status: editingProject.status,
             display_order: editingProject.display_order,
+            is_active: editingProject.is_active,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingProject.id)
@@ -91,7 +109,9 @@ export default function ProjectsPage() {
             tags: editingProject.tags,
             project_url: editingProject.project_url,
             video_url: editingProject.video_url,
+            status: editingProject.status,
             display_order: editingProject.display_order,
+            is_active: editingProject.is_active,
           })
           .select()
           .single()
@@ -130,8 +150,59 @@ export default function ProjectsPage() {
 
   const handleTagsChange = (value: string) => {
     if (!editingProject) return
+    setTagsInputValue(value) // Keep raw input for natural typing
     const tags = value.split(',').map(tag => tag.trim()).filter(Boolean)
     setEditingProject({ ...editingProject, tags })
+  }
+
+  const handleMoveProject = async (projectId: string, direction: 'up' | 'down') => {
+    const currentIndex = projects.findIndex(p => p.id === projectId)
+    if (currentIndex === -1) return
+    
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (targetIndex < 0 || targetIndex >= projects.length) return
+    
+    const currentProject = projects[currentIndex]
+    const targetProject = projects[targetIndex]
+    
+    // Swap display orders
+    const newProjects = [...projects]
+    const tempOrder = currentProject.display_order
+    newProjects[currentIndex] = { ...currentProject, display_order: targetProject.display_order }
+    newProjects[targetIndex] = { ...targetProject, display_order: tempOrder }
+    
+    // Sort by display_order
+    newProjects.sort((a, b) => a.display_order - b.display_order)
+    setProjects(newProjects)
+    
+    // Update in database
+    try {
+      await supabase.from('projects').update({ display_order: targetProject.display_order }).eq('id', currentProject.id)
+      await supabase.from('projects').update({ display_order: tempOrder }).eq('id', targetProject.id)
+      toast.success('Order updated')
+    } catch {
+      toast.error('Failed to update order')
+      fetchProjects() // Revert on error
+    }
+  }
+
+  const handleToggleVisibility = async (project: Project) => {
+    const newIsActive = !project.is_active
+    
+    // Optimistic update
+    setProjects(projects.map(p => p.id === project.id ? { ...p, is_active: newIsActive } : p))
+    
+    const { error } = await supabase
+      .from('projects')
+      .update({ is_active: newIsActive })
+      .eq('id', project.id)
+    
+    if (error) {
+      toast.error('Failed to update visibility')
+      fetchProjects() // Revert on error
+    } else {
+      toast.success(newIsActive ? 'Project is now visible' : 'Project is now hidden')
+    }
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,37 +258,33 @@ export default function ProjectsPage() {
     // Validate file type
     const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']
     if (!validVideoTypes.includes(file.type)) {
-      toast.error('Please select a valid video file (MP4, WebM, OGG)')
-      return
-    }
-
-    // Validate file size (max 100MB)
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error('Video size must be less than 100MB')
+      toast.error('Please select a valid video file (MP4, WebM, OGG, MOV)')
       return
     }
 
     setIsUploadingVideo(true)
 
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      // Upload to Cloudinary via API route
+      const formData = new FormData()
+      formData.append('file', file)
 
-      const { error: uploadError } = await supabase.storage
-        .from('project-videos')
-        .upload(fileName, file)
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
-      if (uploadError) throw uploadError
+      const data = await response.json()
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('project-videos')
-        .getPublicUrl(fileName)
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed')
+      }
 
-      setEditingProject({ ...editingProject, video_url: publicUrl })
-      toast.success('Video uploaded successfully')
+      setEditingProject({ ...editingProject, video_url: data.url })
+      toast.success('Video uploaded successfully! It will be auto-optimized for fast loading.')
     } catch (error) {
       console.error('Video upload error:', error)
-      toast.error('Failed to upload video. Make sure storage bucket is set up.')
+      toast.error('Failed to upload video. Please try again.')
     } finally {
       setIsUploadingVideo(false)
       // Reset file input
@@ -360,7 +427,7 @@ export default function ProjectsPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Tags (comma separated)</label>
                 <Input
-                  value={editingProject.tags?.join(', ') || ''}
+                  value={tagsInputValue}
                   onChange={(e) => handleTagsChange(e.target.value)}
                   placeholder="React, Next.js, TypeScript"
                 />
@@ -429,6 +496,51 @@ export default function ProjectsPage() {
                 <p className="text-xs text-muted-foreground">Leave empty if not available</p>
               </div>
 
+              {/* Status - below links/video */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Status</label>
+                <Input
+                  value={editingProject.status || ''}
+                  onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value })}
+                  placeholder="In Progress, Completed, Beta..."
+                />
+                <p className="text-xs text-muted-foreground">e.g., In Progress, Completed, Beta, Coming Soon</p>
+              </div>
+
+              {/* Display Order */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Display Order</label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={editingProject.display_order}
+                  onChange={(e) => setEditingProject({ ...editingProject, display_order: parseInt(e.target.value) || 1 })}
+                  placeholder="1"
+                />
+                <p className="text-xs text-muted-foreground">Lower numbers appear first</p>
+              </div>
+
+              {/* Visibility Toggle */}
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Visibility</label>
+                  <p className="text-xs text-muted-foreground">Hidden projects won&apos;t appear on the website</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingProject({ ...editingProject, is_active: !editingProject.is_active })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    editingProject.is_active ? 'bg-primary' : 'bg-muted-foreground/30'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      editingProject.is_active ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                 <Button variant="outline" onClick={() => setEditingProject(null)}>
                   Cancel
@@ -449,11 +561,20 @@ export default function ProjectsPage() {
 
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
+        {projects.map((project, index) => (
           <div
             key={project.id}
-            className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors"
+            className={`bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors ${
+              !project.is_active ? 'opacity-60' : ''
+            }`}
           >
+            {/* Hidden badge */}
+            {!project.is_active && (
+              <div className="bg-muted-foreground/20 px-3 py-1 flex items-center gap-1.5">
+                <EyeOff className="w-3 h-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground font-medium">Hidden</span>
+              </div>
+            )}
             {project.image_url ? (
               <Image
                 src={project.image_url}
@@ -468,7 +589,27 @@ export default function ProjectsPage() {
               </div>
             )}
             <div className="p-4 space-y-3">
-              <h3 className="font-semibold text-foreground">{project.title}</h3>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-semibold text-foreground">{project.title}</h3>
+                <div className="flex items-center gap-0.5 flex-shrink-0">
+                  <button
+                    onClick={() => handleMoveProject(project.id, 'up')}
+                    disabled={index === 0}
+                    className="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Move up"
+                  >
+                    <ArrowUp className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => handleMoveProject(project.id, 'down')}
+                    disabled={index === projects.length - 1}
+                    className="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Move down"
+                  >
+                    <ArrowDown className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {project.description}
               </p>
@@ -489,6 +630,11 @@ export default function ProjectsPage() {
                   )}
                 </div>
               )}
+              {project.status && (
+                <span className="inline-block px-2 py-0.5 bg-blue-500/10 text-blue-500 text-xs rounded-full">
+                  {project.status}
+                </span>
+              )}
               <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center gap-2">
                   <Button
@@ -497,6 +643,14 @@ export default function ProjectsPage() {
                     onClick={() => setEditingProject(project)}
                   >
                     Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleToggleVisibility(project)}
+                    title={project.is_active ? 'Hide project' : 'Show project'}
+                  >
+                    {project.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
                   <Button
                     variant="ghost"
