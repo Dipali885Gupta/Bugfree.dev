@@ -1,5 +1,8 @@
 'use client'
 
+// Force dynamic rendering for all admin pages (they require auth and shouldn't be pre-rendered)
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
