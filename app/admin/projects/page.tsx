@@ -262,6 +262,13 @@ export default function ProjectsPage() {
       return
     }
 
+    // Validate file size (500MB limit)
+    const maxSize = 500 * 1024 * 1024 // 500MB in bytes
+    if (file.size > maxSize) {
+      toast.error('Video file size must be less than 500MB. Please compress your video or select a smaller file.')
+      return
+    }
+
     setIsUploadingVideo(true)
 
     try {
@@ -470,7 +477,7 @@ export default function ProjectsPage() {
                         Click to upload video
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        MP4, WebM, OGG up to 100MB
+                        MP4, WebM, OGG up to 500MB
                       </span>
                     </div>
                   )}

@@ -1,6 +1,12 @@
 import { v2 as cloudinary } from 'cloudinary'
 import { NextRequest, NextResponse } from 'next/server'
 
+// Route segment config for Next.js 15 App Router
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+// This is the key configuration for body size in Next.js 15
+export const maxDuration = 300 // Maximum function execution time in seconds (5 minutes for large uploads)
+
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -32,6 +38,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid file type. Please upload MP4, WebM, OGG, or MOV video.' },
         { status: 400 }
+      )
+    }
+
+    // Validate file size (500MB limit)
+    const maxSize = 500 * 1024 * 1024 // 500MB in bytes
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'Video file size must be less than 500MB. Please compress your video or select a smaller file.' },
+        { status: 413 }
       )
     }
 
@@ -69,6 +84,17 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Cloudinary upload error:', error)
+    
+    // Provide specific error messages
+    if (error instanceof Error) {
+      if (error.message.includes('body') || error.message.includes('FormData')) {
+        return NextResponse.json(
+          { error: 'Request too large. Please ensure your video is under 500MB.' },
+          { status: 413 }
+        )
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to upload video. Please try again.' },
       { status: 500 }
