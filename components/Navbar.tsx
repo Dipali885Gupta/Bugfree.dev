@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { NavItem } from '@/lib/supabase/types'
 
 // Default nav items when database is empty
@@ -52,7 +53,14 @@ const Navbar = ({ navItems, logoText = 'getcodefree.tech' }: NavbarProps) => {
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <Link href="/#home" className="flex items-center">
-            <span className="text-2xl font-bold text-gradient">{logoText}</span>
+            <Image 
+              src="/logo.png" 
+              alt={logoText} 
+              width={400} 
+              height={100} 
+              className="h-16 md:h-20 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
