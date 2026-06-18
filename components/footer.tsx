@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Linkedin, Twitter, Github, Facebook, Instagram, LucideIcon } from 'lucide-react';
 import { SiteSettings, FooterLink } from '@/lib/supabase/types';
 
@@ -30,7 +31,13 @@ const Footer = ({ siteSettings, footerLinks }: FooterProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gradient">{siteSettings?.company_name || 'BugFree.dev'}</h3>
+            <Image 
+              src="/logo.png" 
+              alt={siteSettings?.company_name || 'getcodefree.tech'} 
+              width={300} 
+              height={75} 
+              className="h-14 md:h-16 w-auto mb-4"
+            />
             <p className="text-gray-400">
               {siteSettings?.company_description || 'Building and shipping products faster in the AI era. We transform ideas into exceptional digital experiences.'}
             </p>

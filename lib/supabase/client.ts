@@ -15,6 +15,7 @@ export function createClient() {
         'placeholder-anon-key'
       )
     }
+    
     throw new Error('Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
   }
 
