@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from "sonner"
+import StickyCTA from "@/components/StickyCTA"
 
 export const metadata: Metadata = {
   title: "GetCodeFree — Ship your MVP in 3 weeks",
@@ -26,9 +27,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-foreground">
+      <body className="min-h-screen bg-background text-foreground pb-16 md:pb-14">
         {children}
         <Toaster />
+        <StickyCTA />
       </body>
     </html>
   )
