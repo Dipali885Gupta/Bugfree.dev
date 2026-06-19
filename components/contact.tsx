@@ -1,339 +1,226 @@
 "use client"
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Mail, Phone, MapPin } from 'lucide-react'
-import { toast } from 'sonner'
-import emailjs from '@emailjs/browser';
-import type { ContactSection as ContactSectionType, SiteSettings, FaqItem, BudgetOption } from '@/lib/supabase/types'
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar, Mail, Check, ArrowRight } from "lucide-react"
+import { toast } from "sonner"
+import emailjs from "@emailjs/browser"
+import { SITE } from "@/lib/site"
 
-// Default FAQ items
-const defaultFaqItems = [
-  { question: 'How long does the development process usually take?', answer: 'Our AI-powered approach typically reduces development time by 60-70%. Most projects are completed within 4-8 weeks depending on complexity.' },
-  { question: 'Do you provide ongoing maintenance?', answer: 'Yes, we offer flexible maintenance plans to keep your product running smoothly and up-to-date.' },
-  { question: 'What technologies do you specialize in?', answer: 'We specialize in modern web and mobile technologies, AI/ML integration, and cloud services.' },
+const QUALIFIERS = [
+  "You have a product idea but need the build team",
+  "You have an MVP but need it production-hardened",
+  "You want AI automation but don't know where to start",
+  "You need it shipped — not just designed",
 ]
 
-// Default budget options
-const defaultBudgetOptions = [
-  { value: 'less-than-10k', label: 'Less than $10,000' },
-  { value: '10k-25k', label: '$10,000 - $25,000' },
-  { value: '25k-50k', label: '$25,000 - $50,000' },
-  { value: '50k-100k', label: '$50,000 - $100,000' },
-  { value: 'more-than-100k', label: 'More than $100,000' },
+const FAQ_ITEMS = [
+  {
+    q: "How fast can you actually ship an MVP?",
+    a: "Most MVPs go from scope to a deployed, usable product in about 5 weeks. Automations typically ship in 3–7 days per workflow.",
+  },
+  {
+    q: "Who actually writes the code?",
+    a: "Senior engineers only — and you talk directly to the person building. No account managers, no junior handoffs.",
+  },
+  {
+    q: "What happens after launch?",
+    a: "We deploy with monitoring and load testing, then transition into a Production Upgrade & Support track if the product gains traction.",
+  },
 ]
 
-interface ContactSectionProps {
-  contactData?: ContactSectionType | null
-  siteSettings?: SiteSettings | null
-  faqItems?: FaqItem[]
-  budgetOptions?: BudgetOption[]
-}
+const BUDGET_OPTIONS = [
+  { value: "under-5k", label: "Under $5,000" },
+  { value: "5k-15k", label: "$5,000 – $15,000" },
+  { value: "15k-40k", label: "$15,000 – $40,000" },
+  { value: "40k-plus", label: "$40,000+" },
+  { value: "not-sure", label: "Not sure yet" },
+]
 
-const ContactSection = ({ contactData, siteSettings, faqItems: dbFaqItems, budgetOptions: dbBudgetOptions }: ContactSectionProps) => {
-  // Map database items to component format or use defaults
-  const faqItems = dbFaqItems && dbFaqItems.length > 0 
-    ? dbFaqItems.map(f => ({ question: f.question, answer: f.answer }))
-    : defaultFaqItems
-  
-  const budgetOptions = dbBudgetOptions && dbBudgetOptions.length > 0 
-    ? dbBudgetOptions.map(b => ({ value: b.value, label: b.label }))
-    : defaultBudgetOptions
-  
-  // Default values from props
-  const sectionTitle = contactData?.section_title || 'Get In Touch'
-  const sectionDescription = contactData?.section_description || 'Get in touch with us to bring your product idea to life. We\'re excited to hear about your project!'
-  const formTitle = contactData?.form_title || 'Send Us a Message'
-  const contactDescription = contactData?.contact_description || 'Ready to transform your idea into reality? Reach out to us through any of these channels and we\'ll get back to you promptly.'
-  const email = siteSettings?.primary_email || 'pandaamitav01@gmail.com'
-  const phoneNumbers = siteSettings?.phone_numbers || ['+91 7077404655', '+91 7735490979']
-  const location = siteSettings?.location || 'FortuneTower,Chandrasekharpur, Bhubaneswar'
-
+const ContactSection = () => {
   const [formData, setFormData] = useState({
-      name: '',
-      email: '',
-      phone: '',
-      projectBrief: '',
-      budget: '',
-      prototype: ''
-    })
-  
+    name: "",
+    email: "",
+    projectBrief: "",
+    budget: "",
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
-
-  const handleSelectChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      budget: value
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
-    // Simulate form submission
     try {
-      // EmailJS configuration - Now loaded from environment variables
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID as string;
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID as string;
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string;
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID as string
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID as string
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string
 
-      // Prepare template parameters for EmailJS
+      if (!serviceId || !templateId || !publicKey) {
+        toast.error(`Email isn't configured yet. Reach us directly at ${SITE.email}.`)
+        return
+      }
+
       const templateParams = {
         from_name: formData.name,
         from_email: formData.email,
-        phone_number: formData.phone,
         project_brief: formData.projectBrief,
-        budget: formData.budget || 'Not specified',
-        prototype: formData.prototype || 'Not provided',
-        to_email: 'dipaligupta885@gmail.com',
-        message: `
-New Contact Form Submission:
+        budget: formData.budget || "Not specified",
+        to_email: SITE.email,
+        message: `New project enquiry:\n\nName: ${formData.name}\nEmail: ${formData.email}\nBudget: ${
+          formData.budget || "Not specified"
+        }\nBrief: ${formData.projectBrief}`,
+      }
 
-Name: ${formData.name}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Budget: ${formData.budget || 'Not specified'}
-Project Brief: ${formData.projectBrief}
-Prototype/Initial Version: ${formData.prototype || 'Not provided'}
-        `
-      };
-
-      console.log('Sending email with EmailJS:', templateParams);
-
-      // Initialize EmailJS (you only need to do this once)
-      emailjs.init(publicKey);
-
-      // Send email using EmailJS
-      const result = await emailjs.send(
-        serviceId,
-        templateId,
-        templateParams
-      );
-
-      console.log('Email sent successfully:', result);
-      
-      toast.success('Message sent successfully! We\'ll be in touch soon.');
-      
-      // Reset form after successful submission
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        projectBrief: '',
-        budget: '',
-        prototype: ''
-      });
-      
-    } catch (error) {
-      console.error('Error sending email:', error);
-      toast.error('Failed to send message. Please try again or contact us directly.');
+      emailjs.init(publicKey)
+      await emailjs.send(serviceId, templateId, templateParams)
+      toast.success("Message sent. We'll be in touch shortly.")
+      setFormData({ name: "", email: "", projectBrief: "", budget: "" })
+    } catch {
+      toast.error(`Couldn't send. Email us directly at ${SITE.email}.`)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
-
+  }
 
   return (
-    <section id="contact" className="section-padding relative">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-background to-[#121212] opacity-50" />
-        <div className="absolute -top-[10%] -right-[5%] w-[20%] h-[20%] rounded-full bg-primary/10 blur-3xl" />
-      </div>
-      <div className="container mx-auto container-padding relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 opacity-0 animate-fade-in-up">{sectionTitle}</h2>
-          <div className="w-20 h-1 bg-primary mx-auto mb-6 opacity-0 animate-fade-in-up delay-100"></div>
-          <p className="text-lg text-gray-300 max-w-3xl mx-auto opacity-0 animate-fade-in-up delay-200">
-            {sectionDescription}
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <div className="glass-card rounded-xl p-6 md:p-8 opacity-0 animate-fade-in-up delay-100">
-            <h3 className="text-2xl font-semibold mb-6">{formTitle}</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
-                  Name <span className="text-primary">*</span>
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Your full name"
-                  required
-                  className="w-full bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-                  Email <span className="text-primary">*</span>
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="your.email@example.com"
-                  required
-                  className="w-full bg-background/50"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
-                  Phone Number <span className="text-primary">*</span>
-                </label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+91 XXXXXXXXXX"
-                  required
-                  className="w-full bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="projectBrief" className="block text-sm font-medium text-gray-300 mb-1">
-                  Project Brief <span className="text-primary">*</span>
-                </label>
-                <Textarea
-                  id="projectBrief"
-                  name="projectBrief"
-                  value={formData.projectBrief}
-                  onChange={handleChange}
-                  placeholder="Share details about your project or paste a Google Doc/Notion link"
-                  required
-                  className="w-full h-32 bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="budget" className="block text-sm font-medium text-gray-300 mb-1">
-                  Estimated Budget Range
-                </label>
-                <Select onValueChange={handleSelectChange} value={formData.budget}>
-                  <SelectTrigger className="w-full bg-background/50">
-                    <SelectValue placeholder="Select budget range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {budgetOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label htmlFor="prototype" className="block text-sm font-medium text-gray-300 mb-1">
-                  Prototype or Initial Version (optional)
-                </label>
-                <Input
-                  id="prototype"
-                  name="prototype"
-                  value={formData.prototype}
-                  onChange={handleChange}
-                  placeholder="Link to prototype or initial version"
-                  className="w-full bg-background/50"
-                />
-              </div>
-              
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Send Message'}
-              </Button>
-            </form>
-          </div>
-          
-          {/* Contact Information */}
-          <div className="space-y-8 opacity-0 animate-fade-in-up delay-300">
+    <section id="contact" className="section">
+      <div className="container-x">
+        {/* Final CTA panel */}
+        <div
+          className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] p-8 md:p-12"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(25,211,197,0.14), rgba(111,140,255,0.10) 55%, transparent)",
+          }}
+        >
+          <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
             <div>
-              <h3 className="text-2xl font-semibold mb-6">Contact Information</h3>
-              <p className="text-gray-300 mb-8">
-                {contactDescription}
+              <span className="eyebrow">Let&apos;s build</span>
+              <h2 className="section-title mt-4">Tell us what you&apos;re building.</h2>
+              <p className="section-sub mt-4 max-w-md">
+                Whether it&apos;s a mobile app, a web platform, or an AI automation — book a 30-minute
+                call and we&apos;ll scope it together.
               </p>
-              
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <div className="mr-4 h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Mail className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-medium mb-1">Email</h4>
-                    <a href={`mailto:${email}`} className="text-gray-300 hover:text-primary transition-colors">
-                      {email}
-                    </a>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="mr-4 h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Phone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-medium mb-1">Phone</h4>
-                    {phoneNumbers.map((phone, index) => (
-                      <div key={index}>
-                        <a href={`tel:${phone.replace(/\s/g, '')}`} className="text-gray-300 hover:text-primary transition-colors">
-                          {phone}
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="mr-4 h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <MapPin className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-medium mb-1">Location</h4>
-                    <p className="text-gray-300">
-                      {location}
-                    </p>
-                  </div>
-                </div>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <a href={SITE.bookingUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                  <Calendar className="h-4 w-4" />
+                  Book intro call
+                </a>
+                <a href={`mailto:${SITE.email}`} className="btn btn-ghost">
+                  <Mail className="h-4 w-4" />
+                  {SITE.email}
+                </a>
               </div>
             </div>
-            
-            <div className="glass-card rounded-xl p-6 md:p-8">
-              <h4 className="text-xl font-semibold mb-4">FAQ</h4>
-              <div className="space-y-4">
-                {faqItems.map((faq, index) => (
-                  <div key={index}>
-                    <h5 className="font-medium mb-2">{faq.question}</h5>
-                    <p className="text-gray-400">
-                      {faq.answer}
-                    </p>
-                  </div>
+
+            {/* Qualification box */}
+            <div
+              className="rounded-[1.5rem] border border-[var(--color-border)] p-6 md:p-7"
+              style={{ background: "rgba(2,8,14,0.55)", backdropFilter: "blur(8px)" }}
+            >
+              <p className="text-sm font-semibold uppercase tracking-wider text-faint">A good fit if…</p>
+              <ul className="mt-4 space-y-3.5">
+                {QUALIFIERS.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm text-[var(--color-text)]">
+                    <span className="icon-pill h-7 w-7 rounded-lg">
+                      <Check className="h-4 w-4" />
+                    </span>
+                    <span style={{ lineHeight: 1.5 }}>{item}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Lead form + FAQ */}
+        <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1fr]">
+          <div className="card-3d p-6 md:p-8">
+            <h3 className="font-display text-xl font-bold tracking-tight text-[var(--color-text)]">
+              Or send a quick brief
+            </h3>
+            <p className="mt-1.5 text-sm text-muted">We reply within 24 hours.</p>
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                required
+                className="bg-white/5"
+              />
+              <Input
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@company.com"
+                required
+                className="bg-white/5"
+              />
+              <Textarea
+                name="projectBrief"
+                value={formData.projectBrief}
+                onChange={handleChange}
+                placeholder="What are you building? Paste a doc link if you have one."
+                required
+                className="h-28 bg-white/5"
+              />
+              <Select onValueChange={(v) => setFormData((p) => ({ ...p, budget: v }))} value={formData.budget}>
+                <SelectTrigger className="bg-white/5">
+                  <SelectValue placeholder="Estimated budget (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BUDGET_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
+                {isSubmitting ? "Sending…" : "Send brief"}
+                {!isSubmitting && <ArrowRight className="h-4 w-4" />}
+              </button>
+            </form>
+          </div>
+
+          {/* FAQ */}
+          <div id="faq" className="scroll-mt-28">
+            <span className="eyebrow">FAQ</span>
+            <h3 className="section-title mt-4" style={{ fontSize: "var(--text-xl)" }}>
+              Quick answers.
+            </h3>
+            <div className="mt-6 space-y-3">
+              {FAQ_ITEMS.map((item) => (
+                <details
+                  key={item.q}
+                  className="group rounded-2xl border border-[var(--color-border)] p-5"
+                  style={{ background: "rgba(255,255,255,0.02)" }}
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-[var(--color-text)]">
+                    {item.q}
+                    <span className="text-[var(--color-primary)] transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm text-muted" style={{ lineHeight: 1.6 }}>
+                    {item.a}
+                  </p>
+                </details>
+              ))}
             </div>
           </div>
         </div>
       </div>
     </section>
-  );
-};
-  
-
+  )
+}
 
 export default ContactSection
