@@ -1,8 +1,10 @@
 import Navbar from "@/components/Navbar"
 import HeroSection from "@/components/HeroSection"
+import ProductPreview from "@/components/ProductPreview"
 import SocialProof from "@/components/SocialProof"
 import Showcase from "@/components/Showcase"
 import Services from "@/components/Services"
+import MetricsSection from "@/components/MetricsSection"
 import Projects from "@/components/Projects"
 import AboutSection from "@/components/Aboutus"
 import ProcessSection from "@/components/process"
@@ -17,9 +19,11 @@ export default function Home() {
     <main className="min-h-screen">
       <Navbar />
       <HeroSection />
+      <ProductPreview />
       <SocialProof />
       <Showcase />
       <Services />
+      <MetricsSection />
       <Projects />
       <AboutSection />
       <ProcessSection />
