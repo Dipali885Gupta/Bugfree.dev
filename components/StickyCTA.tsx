@@ -20,7 +20,7 @@ const StickyCTA = () => {
       className={`fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--color-border)] backdrop-blur-xl transition-all duration-500 ${
         visible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
       }`}
-      style={{ background: "rgba(9, 13, 17, 0.92)" }}
+      style={{ background: "rgba(var(--color-bg-rgb), 0.92)" }}
     >
       <div className="container-x flex items-center justify-between gap-4 py-3 md:py-4">
         <div className="flex items-center gap-3">

@@ -1,11 +1,11 @@
 // Central site constants for the static marketing page.
-// Replace BOOKING_URL with the real Calendly link when available.
 
 export const SITE = {
   name: "GetCodeFree",
   tagline: "AI-native product studio",
   email: "hello@getcodefreetech.com",
-  bookingUrl: "https://calendly.com/getcodefree/intro",
+  bookingEmail: "getcodefree.tech@gmail.com",
+  bookingUrl: "https://cal.com/amitav-panda-c6qrd9/15min",
   domain: "getcodefreetech.com",
   social: {
     linkedin: "https://www.linkedin.com/company/getcodefree",
@@ -14,8 +14,8 @@ export const SITE = {
 } as const
 
 export const NAV_LINKS = [
-  { name: "Services", href: "#services" },
-  { name: "Projects", href: "#projects" },
-  { name: "Process", href: "#process" },
-  { name: "FAQ", href: "#faq" },
+  { name: "Services", href: "/#services" },
+  { name: "Work", href: "/projects" },
+  { name: "Process", href: "/#process" },
+  { name: "FAQ", href: "/#faq" },
 ] as const

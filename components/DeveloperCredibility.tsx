@@ -1,6 +1,7 @@
 "use client"
 
 import { MapPin, Briefcase, Code, GraduationCap, Award, ArrowRight } from "lucide-react"
+import { SITE } from "@/lib/site"
 
 const DEVELOPER = {
   name: "Amitav Panda",
@@ -63,7 +64,7 @@ const DeveloperCredibility = () => {
             </div>
 
             <a
-              href="https://calendly.com/getcodefree/intro"
+              href={SITE.bookingUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary mt-6 w-full"
