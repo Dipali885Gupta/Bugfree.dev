@@ -96,7 +96,7 @@ const ContactSection = () => {
           className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] p-8 md:p-12"
           style={{
             background:
-              "linear-gradient(135deg, rgba(25,211,197,0.14), rgba(111,140,255,0.10) 55%, transparent)",
+              "linear-gradient(135deg, rgba(var(--color-primary-rgb),0.14), rgba(var(--color-blue-rgb),0.10) 55%, transparent)",
           }}
         >
           <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">

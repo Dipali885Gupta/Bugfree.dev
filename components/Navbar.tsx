@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import Link from "next/link"
 import { Menu, X, Moon, Sun, Calendar } from "lucide-react"
 import { NAV_LINKS, SITE } from "@/lib/site"
 
@@ -57,13 +58,13 @@ const Navbar = () => {
             }`}
           >
             {/* Logo */}
-            <a href="#home" className="flex items-center gap-3" aria-label={SITE.name}>
+            <Link href="/" className="flex items-center gap-3" aria-label={SITE.name}>
               <span
                 className="grid h-9 w-9 place-items-center rounded-xl font-display text-lg font-extrabold"
                 style={{
                   background: "var(--color-primary)",
                   color: "var(--color-text-inverse)",
-                  boxShadow: "0 8px 22px rgba(25,211,197,0.35)",
+                  boxShadow: "0 8px 22px rgba(var(--color-primary-rgb),0.35)",
                 }}
               >
                 G
@@ -74,7 +75,7 @@ const Navbar = () => {
                 </span>
                 <span className="text-[0.7rem] text-faint">{SITE.tagline}</span>
               </span>
-            </a>
+            </Link>
 
             {/* Center links */}
             <nav className="hidden items-center gap-8 md:flex">
@@ -95,12 +96,17 @@ const Navbar = () => {
                 type="button"
                 onClick={toggleTheme}
                 aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-                className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(25,211,197,0.4)]"
+                className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(var(--color-primary-rgb),0.4)]"
               >
                 {theme === "dark" ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
               </button>
 
-              <a href={SITE.bookingUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary hidden sm:inline-flex">
+              <a
+                href={SITE.bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary hidden sm:inline-flex"
+              >
                 <Calendar className="h-4 w-4" />
                 Book a strategy call
               </a>

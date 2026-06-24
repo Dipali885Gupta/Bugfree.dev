@@ -2,16 +2,16 @@ import { Linkedin, Github, Mail } from "lucide-react"
 import { SITE } from "@/lib/site"
 
 const SERVICES = [
-  { label: "MVP Sprint", href: "#services" },
-  { label: "Production Upgrade", href: "#services" },
-  { label: "AI Automation", href: "#services" },
+  { label: "MVP Sprint", href: "/#services" },
+  { label: "Production Upgrade", href: "/#services" },
+  { label: "AI Automation", href: "/#services" },
 ]
 
 const COMPANY = [
-  { label: "About", href: "#about" },
-  { label: "Projects", href: "#projects" },
-  { label: "Process", href: "#process" },
-  { label: "Contact", href: "#contact" },
+  { label: "About", href: "/#about" },
+  { label: "Projects", href: "/projects" },
+  { label: "Process", href: "/#process" },
+  { label: "Contact", href: "/#contact" },
 ]
 
 const Footer = () => {
@@ -74,7 +74,7 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn"
-              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(25,211,197,0.4)]"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(var(--color-primary-rgb),0.4)]"
             >
               <Linkedin className="h-[18px] w-[18px]" />
             </a>
@@ -83,14 +83,14 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
-              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(25,211,197,0.4)]"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(var(--color-primary-rgb),0.4)]"
             >
               <Github className="h-[18px] w-[18px]" />
             </a>
             <a
               href={`mailto:${SITE.email}`}
               aria-label="Email"
-              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(25,211,197,0.4)]"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-muted transition-all hover:text-[var(--color-primary)] hover:border-[rgba(var(--color-primary-rgb),0.4)]"
             >
               <Mail className="h-[18px] w-[18px]" />
             </a>
