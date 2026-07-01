@@ -1,87 +1,88 @@
 "use client"
 
-import { MapPin, Briefcase, Code, GraduationCap, Award, ArrowRight } from "lucide-react"
-import { SITE } from "@/lib/site"
+import { MapPin, ArrowRight } from "lucide-react"
+import { DEFAULT_DEVELOPER, DEFAULT_SECTION_HEADERS, DEFAULT_SITE } from "@/lib/cms/defaults"
+import { getIcon } from "@/lib/cms/icons"
+import type { SectionHeader } from "@/lib/cms/mappers"
 
-const DEVELOPER = {
-  name: "Amitav Panda",
-  role: "Founder & Senior Full-Stack Engineer",
-  location: "Bengaluru, India",
-  experience: "10+ years",
-  tagline: "I lead every project personally. No account managers, no handoffs — just senior-level execution.",
-  highlights: [
-    { icon: Briefcase, label: "10+ years full-stack development" },
-    { icon: Code, label: "React, Next.js, Node.js, React Native, Python" },
-    { icon: Award, label: "AI/ML: LLMs, LangChain, agents, RAG pipelines" },
-    { icon: GraduationCap, label: "Shipped 20+ products from zero to production" },
-  ],
-  approach: [
-    "Every line of code I ship is production-grade — not prototype quality",
-    "I use AI workflows to deliver 3x faster without cutting corners",
-    "You get direct access. No project manager buffer, no communication lag",
-    "I only take projects where I can personally guarantee the outcome",
-  ],
+type DeveloperProfile = typeof DEFAULT_DEVELOPER & { sectionSubtitle?: string }
+
+interface DeveloperCredibilityProps {
+  profile?: DeveloperProfile
+  header?: SectionHeader
+  bookingUrl?: string
 }
 
-const DeveloperCredibility = () => {
+const DeveloperCredibility = ({
+  profile = DEFAULT_DEVELOPER,
+  header = DEFAULT_SECTION_HEADERS.developer,
+  bookingUrl = DEFAULT_SITE.bookingUrl,
+}: DeveloperCredibilityProps) => {
+  const subtitle = profile.sectionSubtitle ?? header.subtitle
+
   return (
     <section id="team" className="section">
       <div className="container-x">
         <div className="max-w-2xl reveal-up">
-          <span className="eyebrow">Who builds it</span>
-          <h2 className="section-title mt-4">Senior engineer. Founder-led. No middlemen.</h2>
-          <p className="section-sub mt-4">
-            Every project is personally built and overseen by Amitav — a senior full-stack engineer
-            with a decade of experience shipping production applications.
-          </p>
+          {header.eyebrow && <span className="eyebrow">{header.eyebrow}</span>}
+          <h2 className="section-title mt-4">
+            {header.title}{" "}
+            {header.titleHighlight && <span className="hl-grad">{header.titleHighlight}</span>}
+          </h2>
+          {subtitle && <p className="section-sub mt-4">{subtitle}</p>}
         </div>
 
         <div className="mt-12 grid gap-8 md:grid-cols-[1fr_2fr]">
-          {/* Left — Profile card */}
           <div className="card-3d p-6 md:p-7">
-            {/* Avatar placeholder */}
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-[var(--color-primary-highlight)] md:mx-0">
-              <span className="font-display text-4xl font-extrabold text-[var(--color-primary)]">AP</span>
-            </div>
+            {profile.avatarUrl ? (
+              <img
+                src={profile.avatarUrl}
+                alt={profile.name}
+                className="mx-auto h-24 w-24 rounded-2xl object-cover md:mx-0"
+              />
+            ) : (
+              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-[var(--color-primary-highlight)] md:mx-0">
+                <span className="font-display text-4xl font-extrabold text-[var(--color-primary)]">
+                  {profile.avatarInitials}
+                </span>
+              </div>
+            )}
 
             <h3 className="mt-5 font-display text-xl font-bold tracking-tight text-[var(--color-text)]">
-              {DEVELOPER.name}
+              {profile.name}
             </h3>
-            <p className="mt-1 text-sm text-[var(--color-primary)]">{DEVELOPER.role}</p>
+            <p className="mt-1 text-sm text-[var(--color-primary)]">{profile.role}</p>
 
             <div className="mt-3 flex items-center gap-1.5 text-xs text-muted">
               <MapPin className="h-3.5 w-3.5" />
-              {DEVELOPER.location}
+              {profile.location}
             </div>
 
             <div className="mt-5 space-y-2.5">
-              {DEVELOPER.highlights.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2.5 text-sm text-muted">
-                  <Icon className="h-4 w-4 flex-shrink-0 text-[var(--color-primary)]" />
-                  <span>{label}</span>
-                </div>
-              ))}
+              {profile.highlights.map(({ iconName, label }) => {
+                const Icon = getIcon(iconName)
+                return (
+                  <div key={label} className="flex items-center gap-2.5 text-sm text-muted">
+                    <Icon className="h-4 w-4 flex-shrink-0 text-[var(--color-primary)]" />
+                    <span>{label}</span>
+                  </div>
+                )
+              })}
             </div>
 
-            <a
-              href={SITE.bookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary mt-6 w-full"
-            >
-              Book a call with Amitav
+            <a href={bookingUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary mt-6 w-full">
+              Book a call with {profile.name.split(" ")[0]}
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
 
-          {/* Right — Approach */}
           <div className="flex flex-col justify-center gap-5">
             <p className="text-lg text-[var(--color-text)]" style={{ lineHeight: 1.65 }}>
-              {DEVELOPER.tagline}
+              {profile.tagline}
             </p>
 
             <div className="grid gap-3">
-              {DEVELOPER.approach.map((point) => (
+              {profile.approach.map((point) => (
                 <div
                   key={point}
                   className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] p-4 transition-colors hover:border-[var(--color-primary)]/20"
