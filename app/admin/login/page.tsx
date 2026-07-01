@@ -27,7 +27,11 @@ export default function AdminLoginPage() {
       })
 
       if (error) {
-        setError(error.message)
+        const message =
+          error.message.includes('Database error querying schema')
+            ? 'Supabase auth user record is broken (NULL token fields). Run supabase/fix-auth-login.sql in your Supabase SQL Editor, or recreate the user in Authentication → Users.'
+            : error.message
+        setError(message)
         return
       }
 

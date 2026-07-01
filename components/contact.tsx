@@ -7,7 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Mail, Check, ArrowRight } from "lucide-react"
 import { toast } from "sonner"
 import emailjs from "@emailjs/browser"
-import { SITE } from "@/lib/site"
+import { createClient } from "@/lib/supabase/client"
+import { DEFAULT_SECTION_HEADERS, DEFAULT_SITE, type SiteConfig } from "@/lib/cms/defaults"
+import type { SectionHeader } from "@/lib/cms/mappers"
+import type { FaqItem, BudgetOption } from "@/lib/supabase/types"
 
 const QUALIFIERS = [
   "You have a product idea but need the build team",
@@ -39,7 +42,19 @@ const BUDGET_OPTIONS = [
   { value: "not-sure", label: "Not sure yet" },
 ]
 
-const ContactSection = () => {
+interface ContactSectionProps {
+  site?: SiteConfig
+  header?: SectionHeader
+  faqItems?: FaqItem[]
+  budgetOptions?: BudgetOption[]
+}
+
+const ContactSection = ({
+  site = DEFAULT_SITE,
+  header = DEFAULT_SECTION_HEADERS.contact,
+  faqItems = [],
+  budgetOptions = [],
+}: ContactSectionProps) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -53,36 +68,51 @@ const ContactSection = () => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const faqList =
+    faqItems.length > 0
+      ? faqItems.map((f) => ({ q: f.question, a: f.answer }))
+      : FAQ_ITEMS
+
+  const budgetList =
+    budgetOptions.length > 0
+      ? budgetOptions.map((b) => ({ value: b.value, label: b.label }))
+      : BUDGET_OPTIONS
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     try {
+      const supabase = createClient()
+      await supabase.from("contact_submissions").insert({
+        name: formData.name,
+        email: formData.email,
+        project_brief: formData.projectBrief,
+        budget: formData.budget || null,
+      })
+
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID as string
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID as string
       const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string
 
-      if (!serviceId || !templateId || !publicKey) {
-        toast.error(`Email isn't configured yet. Reach us directly at ${SITE.email}.`)
-        return
+      if (serviceId && templateId && publicKey) {
+        const templateParams = {
+          from_name: formData.name,
+          from_email: formData.email,
+          project_brief: formData.projectBrief,
+          budget: formData.budget || "Not specified",
+          to_email: site.email,
+          message: `New project enquiry:\n\nName: ${formData.name}\nEmail: ${formData.email}\nBudget: ${
+            formData.budget || "Not specified"
+          }\nBrief: ${formData.projectBrief}`,
+        }
+        emailjs.init(publicKey)
+        await emailjs.send(serviceId, templateId, templateParams)
       }
 
-      const templateParams = {
-        from_name: formData.name,
-        from_email: formData.email,
-        project_brief: formData.projectBrief,
-        budget: formData.budget || "Not specified",
-        to_email: SITE.email,
-        message: `New project enquiry:\n\nName: ${formData.name}\nEmail: ${formData.email}\nBudget: ${
-          formData.budget || "Not specified"
-        }\nBrief: ${formData.projectBrief}`,
-      }
-
-      emailjs.init(publicKey)
-      await emailjs.send(serviceId, templateId, templateParams)
       toast.success("Message sent. We'll be in touch shortly.")
       setFormData({ name: "", email: "", projectBrief: "", budget: "" })
     } catch {
-      toast.error(`Couldn't send. Email us directly at ${SITE.email}.`)
+      toast.error(`Couldn't send. Email us directly at ${site.email}.`)
     } finally {
       setIsSubmitting(false)
     }
@@ -101,20 +131,17 @@ const ContactSection = () => {
         >
           <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
             <div>
-              <span className="eyebrow">Let&apos;s build</span>
-              <h2 className="section-title mt-4">Tell us what you&apos;re building.</h2>
-              <p className="section-sub mt-4 max-w-md">
-                Whether it&apos;s a mobile app, a web platform, or an AI automation — book a 30-minute
-                call and we&apos;ll scope it together.
-              </p>
+              {header.eyebrow && <span className="eyebrow">{header.eyebrow}</span>}
+              <h2 className="section-title mt-4">{header.title}</h2>
+              {header.subtitle && <p className="section-sub mt-4 max-w-md">{header.subtitle}</p>}
               <div className="mt-7 flex flex-wrap items-center gap-3">
-                <a href={SITE.bookingUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                <a href={site.bookingUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                   <Calendar className="h-4 w-4" />
                   Book intro call
                 </a>
-                <a href={`mailto:${SITE.email}`} className="btn btn-ghost">
+                <a href={`mailto:${site.email}`} className="btn btn-ghost">
                   <Mail className="h-4 w-4" />
-                  {SITE.email}
+                  {site.email}
                 </a>
               </div>
             </div>
@@ -177,7 +204,7 @@ const ContactSection = () => {
                   <SelectValue placeholder="Estimated budget (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  {BUDGET_OPTIONS.map((o) => (
+                  {budgetList.map((o) => (
                     <SelectItem key={o.value} value={o.value}>
                       {o.label}
                     </SelectItem>
@@ -198,7 +225,7 @@ const ContactSection = () => {
               Quick answers.
             </h3>
             <div className="mt-6 space-y-3">
-              {FAQ_ITEMS.map((item) => (
+              {faqList.map((item) => (
                 <details
                   key={item.q}
                   className="group rounded-2xl border border-[var(--color-border)] p-5"

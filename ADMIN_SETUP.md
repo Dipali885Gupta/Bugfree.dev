@@ -38,6 +38,19 @@ This guide will help you set up the admin dashboard for your Bugfree.dev landing
 
 This will create:
 - All required tables (12 total)
+
+### CMS v2 (full landing page control)
+
+After `schema.sql`, also run **`supabase/cms-landing-v2.sql`** in the SQL Editor. This adds:
+
+- Extended hero fields (headline lines, panel cards, ticker, meta chips)
+- `landing_sections` — section eyebrows/titles for every block
+- `social_proof_items`, `metrics_items`, `tech_stack_items`, `developer_profile`, `product_preview_cards`
+- Extended `feature_cards` with `section` (`about` | `services`), badges, bullets, modal details
+- Extended `process_steps` (subtitle, timeline, outcomes, highlight)
+- Seed data matching the current GetCodeFree landing page
+
+Until this migration runs, the site still works — it falls back to static defaults in code.
 - Row Level Security (RLS) policies
 - Indexes for performance
 - Seed data for your landing page
@@ -144,6 +157,23 @@ View contact form submissions:
 | `contact_submissions` | Form submissions |
 
 ## Troubleshooting
+
+### "Database error querying schema"
+This is a **Supabase Auth database issue**, not a bug in the Next.js login page. It usually means your admin user row in `auth.users` has NULL token columns (often from creating the user with raw SQL instead of the Supabase Dashboard).
+
+**Fix (recommended):**
+1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your project → **SQL Editor**
+2. Run the script in `supabase/fix-auth-login.sql`
+3. Try logging in again
+
+**If it still fails:**
+1. Go to **Authentication → Users**
+2. Delete the broken admin user
+3. **Add user → Create new user** (Dashboard UI only — do not INSERT into `auth.users` manually)
+4. Set email + password, enable **Auto Confirm User**
+5. Log in at `/admin/login`
+
+Check **Authentication → Logs** for the exact Postgres error if problems persist.
 
 ### "Invalid login credentials"
 - Make sure you created a user in Supabase Authentication

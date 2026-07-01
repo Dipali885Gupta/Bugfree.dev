@@ -1,46 +1,18 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { ArrowRight, ArrowDown, Sparkles, Smartphone, Monitor, Bot, ShieldCheck } from "lucide-react"
-import { SITE } from "@/lib/site"
+import { ArrowRight, ArrowDown, Sparkles } from "lucide-react"
+import { DEFAULT_HERO } from "@/lib/cms/defaults"
+import { getIcon } from "@/lib/cms/icons"
 import "splitting/dist/splitting.css"
 
-const META_CHIPS = [
-  { icon: Smartphone, label: "Mobile apps" },
-  { icon: Monitor, label: "Web platforms" },
-  { icon: Bot, label: "AI automations" },
-  { icon: ShieldCheck, label: "Production support" },
-]
+type HeroData = typeof DEFAULT_HERO
 
-const PANEL_CARDS = [
-  {
-    title: "MVP Launch Sprint",
-    body: "Scope, design, build, ship. One focused sprint — production-ready MVP in ~3 weeks.",
-    featured: true,
-  },
-  {
-    title: "Full Product Development",
-    body: "From zero to production — design, build, deploy, and monthly support included.",
-    featured: false,
-  },
-  {
-    title: "AI Workflow Automation",
-    body: "Lead gen, content pipelines, CRM sync, and internal copilots shipped in days — not months.",
-    featured: false,
-  },
-]
+interface HeroSectionProps {
+  hero?: HeroData
+}
 
-const TICKER_ITEMS = [
-  "React Native builds",
-  "Next.js product teams",
-  "LangChain workflows",
-  "Python automations",
-  "Supabase + Node.js",
-  "Founder-led execution",
-  "AI agent systems",
-]
-
-const HeroSection = () => {
+const HeroSection = ({ hero = DEFAULT_HERO }: HeroSectionProps) => {
   const heroRef = useRef<HTMLElement>(null)
   const headlineRef = useRef<HTMLHeadingElement>(null)
   const bgGlowRef = useRef<HTMLDivElement>(null)
@@ -109,7 +81,7 @@ const HeroSection = () => {
           <div ref={copyRef}>
             <span className="eyebrow">
               <Sparkles className="h-3.5 w-3.5" />
-              For founders who ship — not just plan
+              {hero.badge}
             </span>
 
             <h1
@@ -117,37 +89,38 @@ const HeroSection = () => {
               className="mt-6 font-display font-extrabold text-[var(--color-text)]"
               style={{ fontSize: "var(--text-hero)", letterSpacing: "-0.05em", lineHeight: 0.92 }}
             >
-              <span data-splitting>Ship your MVP in </span>
-              <span data-splitting className="hl-grad">3 weeks.</span>
+              <span data-splitting>{hero.headline}</span>
+              <span data-splitting className="hl-grad">{hero.headlineAccent1}</span>
               <br />
-              <span data-splitting>Automate your ops in </span>
-              <span data-splitting className="hl-grad">5 days.</span>
+              <span data-splitting>{hero.headlineLine2}</span>
+              <span data-splitting className="hl-grad">{hero.headlineAccent2}</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-muted" style={{ fontSize: "var(--text-base)", lineHeight: 1.65 }}>
-              GetCodeFree builds mobile apps, web platforms, and AI automations for startups and
-              growth-stage businesses — with a lean senior team, production-grade execution, and
-              founder-level speed.
+              {hero.subheadline}
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a href="#contact" className="btn btn-primary">
-                Start a project
+              <a href={hero.ctaPrimary.href} className="btn btn-primary">
+                {hero.ctaPrimary.text}
                 <ArrowRight className="h-4 w-4" />
               </a>
-              <a href="#projects" className="btn btn-ghost">
-                See shipped work
+              <a href={hero.ctaSecondary.href} className="btn btn-ghost">
+                {hero.ctaSecondary.text}
                 <ArrowDown className="h-4 w-4" />
               </a>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-2.5">
-              {META_CHIPS.map(({ icon: Icon, label }) => (
-                <span key={label} className="chip">
-                  <Icon className="h-4 w-4 text-[var(--color-primary)]" />
-                  {label}
-                </span>
-              ))}
+              {hero.metaChips.map(({ iconName, label }) => {
+                const Icon = getIcon(iconName)
+                return (
+                  <span key={label} className="chip">
+                    <Icon className="h-4 w-4 text-[var(--color-primary)]" />
+                    {label}
+                  </span>
+                )
+              })}
             </div>
           </div>
 
@@ -158,11 +131,11 @@ const HeroSection = () => {
               style={{ borderRadius: "1.75rem" }}
             >
               <div className="mb-4 flex items-center justify-between">
-                <span className="eyebrow-line">What we ship</span>
-                <span className="badge">6 offers</span>
+                <span className="eyebrow-line">{hero.panelLabel}</span>
+                <span className="badge">{hero.panelBadge}</span>
               </div>
               <div className="flex flex-col gap-3">
-                {PANEL_CARDS.map((card) =>
+                {hero.panelCards.map((card) =>
                   card.featured ? (
                     <div key={card.title} className="card-glow-border p-[1px]">
                       <div
@@ -207,7 +180,7 @@ const HeroSection = () => {
         aria-hidden="true"
       >
         <div className="ticker-track">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+          {[...hero.tickerItems, ...hero.tickerItems].map((item, i) => (
             <span key={i} className="inline-flex items-center gap-3 text-sm text-faint">
               {item}
               <span className="text-[var(--color-primary)]">·</span>

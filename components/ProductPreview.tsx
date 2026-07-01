@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { DEFAULT_PRODUCT_PREVIEW, DEFAULT_SECTION_HEADERS } from "@/lib/cms/defaults"
 
 interface ProductCard {
   name: string
@@ -8,18 +9,13 @@ interface ProductCard {
   accent: string
   gradientFrom: string
   gradientTo: string
+  image?: string
 }
 
-const PRODUCTS: ProductCard[] = [
-  { name: "KPI Dashboard", type: "App UI", accent: "#19d3c5", gradientFrom: "#0d3d3a", gradientTo: "#10161c" },
-  { name: "Mobile Onboarding", type: "App UI", accent: "#6f8cff", gradientFrom: "#1a2240", gradientTo: "#10161c" },
-  { name: "Analytics Platform", type: "Dashboard", accent: "#19d3c5", gradientFrom: "#0f2d30", gradientTo: "#10161c" },
-  { name: "Control Panel", type: "Dashboard", accent: "#ffb44c", gradientFrom: "#2d2010", gradientTo: "#10161c" },
-  { name: "Transaction Feed", type: "Dashboard", accent: "#a78bfa", gradientFrom: "#1e1535", gradientTo: "#10161c" },
-  { name: "CRM Overview", type: "Dashboard", accent: "#19d3c5", gradientFrom: "#0d3d3a", gradientTo: "#10161c" },
-  { name: "Chat Interface", type: "App UI", accent: "#6f8cff", gradientFrom: "#1a2240", gradientTo: "#10161c" },
-  { name: "Settings Panel", type: "Dashboard", accent: "#34d399", gradientFrom: "#0f2d20", gradientTo: "#10161c" },
-]
+interface ProductPreviewProps {
+  cards?: ProductCard[]
+  header?: typeof DEFAULT_SECTION_HEADERS.product_preview
+}
 
 const MiniBar = ({ width, color }: { width: string; color: string }) => (
   <div className="h-2 rounded-full" style={{ width, background: color, opacity: 0.6 }} />
@@ -122,12 +118,35 @@ const ProductCard = ({ product }: { product: ProductCard }) => (
       boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.05)",
     }}
   >
-    <div style={{ height: "clamp(220px, 22vw, 300px)" }}>
-      {product.type === "Dashboard" ? (
-        <DashboardMock accent={product.accent} gradientFrom={product.gradientFrom} />
-      ) : (
-        <MobileMock accent={product.accent} gradientFrom={product.gradientFrom} />
-      )}
+    <div style={{ height: "clamp(220px, 22vw, 300px)", position: "relative" }}>
+      {product.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={product.image}
+          alt={product.name}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          onError={(e) => {
+            // fallback to mockup if image fails
+            const target = e.currentTarget as HTMLImageElement
+            target.style.display = "none"
+            const parent = target.parentElement
+            if (parent) {
+              const fallback = parent.querySelector("[data-mockup-fallback]") as HTMLElement
+              if (fallback) fallback.style.display = ""
+            }
+          }}
+        />
+      ) : null}
+      <div
+        data-mockup-fallback=""
+        style={{ display: product.image ? "none" : "block", width: "100%", height: "100%" }}
+      >
+        {product.type === "Dashboard" ? (
+          <DashboardMock accent={product.accent} gradientFrom={product.gradientFrom} />
+        ) : (
+          <MobileMock accent={product.accent} gradientFrom={product.gradientFrom} />
+        )}
+      </div>
     </div>
     <div className="flex items-center justify-between px-4 py-2.5 border-t" style={{ borderColor: "rgba(255,255,255,0.06)", background: "linear-gradient(180deg, var(--color-surface), var(--color-surface-2))" }}>
       <div>
@@ -142,7 +161,10 @@ const ProductCard = ({ product }: { product: ProductCard }) => (
   </div>
 )
 
-const ProductPreview = () => {
+const ProductPreview = ({
+  cards = DEFAULT_PRODUCT_PREVIEW,
+  header = DEFAULT_SECTION_HEADERS.product_preview,
+}: ProductPreviewProps) => {
   const sectionRef = useRef<HTMLElement>(null)
   const [visible, setVisible] = useState(false)
 
@@ -162,19 +184,18 @@ const ProductPreview = () => {
     return () => observer.disconnect()
   }, [])
 
-  const allProducts = [...PRODUCTS, ...PRODUCTS]
+  const allProducts = [...cards, ...cards]
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden py-4 md:py-10">
       <div className="container-x">
         <div className="text-center mb-8 reveal-up">
-          <span className="eyebrow">What we ship</span>
+          {header.eyebrow && <span className="eyebrow">{header.eyebrow}</span>}
           <h2 className="section-title mt-4">
-            Real products. <span className="hl-grad">Real dashboards.</span>
+            {header.title}{" "}
+            {header.titleHighlight && <span className="hl-grad">{header.titleHighlight}</span>}
           </h2>
-          <p className="section-sub mt-3 mx-auto max-w-xl">
-            Production-grade apps with real UI — not wireframes, not prototypes. Every build ships with a live dashboard.
-          </p>
+          {header.subtitle && <p className="section-sub mt-3 mx-auto max-w-xl">{header.subtitle}</p>}
         </div>
       </div>
 
