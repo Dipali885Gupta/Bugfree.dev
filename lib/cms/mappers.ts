@@ -206,16 +206,18 @@ export function mapAboutCards(cards: FeatureCard[]) {
 }
 
 export function mapServices(cards: FeatureCard[]): ServiceItem[] {
-  const services = (cards as FeatureCardExtended[]).filter((c) => c.section === "services")
+  const services = (cards as FeatureCardExtended[]).filter(
+    (c) => c.section === "services" || c.section == null
+  )
   if (!services.length) return DEFAULT_SERVICES
   return services.map((c) => ({
-    id: c.item_key || c.id,
+    id: (c as FeatureCardExtended).item_key || c.id,
     iconName: c.icon_name,
     title: c.title,
-    badge: c.badge || "",
+    badge: (c as FeatureCardExtended).badge || "",
     description: c.description ?? "",
-    bullets: c.bullets ?? [],
-    details: (c.details as { label: string; value: string }[]) ?? [],
+    bullets: ((c as FeatureCardExtended).bullets) ?? [],
+    details: (((c as FeatureCardExtended).details) as { label: string; value: string }[]) ?? [],
   }))
 }
 
