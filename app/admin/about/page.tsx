@@ -30,7 +30,7 @@ export default function AboutSectionPage() {
     
     const [aboutResult, featuresResult] = await Promise.all([
       supabase.from('about_section').select('*').single(),
-      supabase.from('feature_cards').select('*').order('display_order'),
+      supabase.from('feature_cards').select('*').eq('section', 'about').order('display_order'),
     ])
 
     if (aboutResult.error && aboutResult.error.code !== 'PGRST116') {
@@ -107,6 +107,7 @@ export default function AboutSectionPage() {
 
   const handleAddFeature = async () => {
     const newFeature = {
+      section: 'about',
       icon_name: 'Zap',
       title: 'New Feature',
       description: 'Feature description',

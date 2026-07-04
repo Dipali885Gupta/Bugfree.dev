@@ -3,7 +3,9 @@
 import Link from "next/link"
 import { useState } from "react"
 import ProjectCard from "@/components/ProjectCard"
-import { getAllProjects } from "@/lib/projects"
+import { DEFAULT_PROJECTS, DEFAULT_SECTION_HEADERS } from "@/lib/cms/defaults"
+import type { Project } from "@/lib/projects"
+import type { SectionHeader } from "@/lib/cms/mappers"
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -13,12 +15,15 @@ const FILTERS = [
   { key: "automations", label: "Automations" },
 ]
 
-const allProjects = getAllProjects()
+interface ProjectsProps {
+  projects?: Project[]
+  header?: SectionHeader
+}
 
-const Projects = () => {
+const Projects = ({ projects = DEFAULT_PROJECTS, header = DEFAULT_SECTION_HEADERS.projects }: ProjectsProps) => {
   const [active, setActive] = useState("all")
 
-  const filtered = allProjects.filter(
+  const filtered = projects.filter(
     (p) => active === "all" || p.categories.includes(active)
   )
 
@@ -27,9 +32,10 @@ const Projects = () => {
       <div className="container-x">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-10 md:mb-12">
           <div className="max-w-2xl reveal-up">
-            <span className="eyebrow">Selected builds</span>
+            <span className="eyebrow">{header.eyebrow}</span>
             <h2 className="section-title mt-4">
-              Shipped products. <span className="hl-grad">Real results.</span>
+              {header.title}{" "}
+              {header.titleHighlight && <span className="hl-grad">{header.titleHighlight}</span>}
             </h2>
           </div>
 

@@ -3,9 +3,14 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { Menu, X, Moon, Sun, Calendar } from "lucide-react"
-import { NAV_LINKS, SITE } from "@/lib/site"
+import { DEFAULT_NAV, DEFAULT_SITE, type SiteConfig } from "@/lib/cms/defaults"
 
-const Navbar = () => {
+interface NavbarProps {
+  site?: SiteConfig
+  nav?: { name: string; href: string }[]
+}
+
+const Navbar = ({ site = DEFAULT_SITE, nav = DEFAULT_NAV }: NavbarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [theme, setTheme] = useState<"dark" | "light">("dark")
@@ -58,7 +63,7 @@ const Navbar = () => {
             }`}
           >
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3" aria-label={SITE.name}>
+            <Link href="/" className="flex items-center gap-3" aria-label={site.name}>
               <span
                 className="grid h-9 w-9 place-items-center rounded-xl font-display text-lg font-extrabold"
                 style={{
@@ -71,15 +76,15 @@ const Navbar = () => {
               </span>
               <span className="flex flex-col leading-none">
                 <span className="font-display text-lg font-extrabold tracking-tight text-[var(--color-text)]">
-                  {SITE.name}
+                  {site.name}
                 </span>
-                <span className="text-[0.7rem] text-faint">{SITE.tagline}</span>
+                <span className="text-[0.7rem] text-faint">{site.tagline}</span>
               </span>
             </Link>
 
             {/* Center links */}
             <nav className="hidden items-center gap-8 md:flex">
-              {NAV_LINKS.map((link) => (
+              {nav.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
@@ -102,7 +107,7 @@ const Navbar = () => {
               </button>
 
               <a
-                href={SITE.bookingUrl}
+                href={site.bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-primary hidden sm:inline-flex"
@@ -145,7 +150,7 @@ const Navbar = () => {
           }}
         >
           <div className="mb-6 flex items-center justify-between">
-            <span className="font-display text-lg font-extrabold text-[var(--color-text)]">{SITE.name}</span>
+            <span className="font-display text-lg font-extrabold text-[var(--color-text)]">{site.name}</span>
             <button
               type="button"
               className="grid h-10 w-10 place-items-center rounded-full border border-[var(--color-border)] text-[var(--color-text)]"
@@ -156,7 +161,7 @@ const Navbar = () => {
             </button>
           </div>
 
-          {NAV_LINKS.map((link) => (
+          {nav.map((link) => (
             <a
               key={link.name}
               href={link.href}
@@ -168,7 +173,7 @@ const Navbar = () => {
           ))}
 
           <a
-            href={SITE.bookingUrl}
+            href={site.bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setMobileOpen(false)}

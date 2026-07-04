@@ -24,6 +24,8 @@ export interface Project {
   categories: string[]
   featured: boolean
   order: number
+  heroImage?: string
+  galleryImages?: string[]
 }
 
 export const PROJECTS: Project[] = [

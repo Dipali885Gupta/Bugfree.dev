@@ -1,15 +1,11 @@
 "use client"
 
 import { Quote } from "lucide-react"
+import { DEFAULT_SECTION_HEADERS } from "@/lib/cms/defaults"
+import type { SectionHeader } from "@/lib/cms/mappers"
+import type { Testimonial } from "@/lib/supabase/types"
 
-interface Testimonial {
-  quote: string
-  name: string
-  role: string
-  initial: string
-}
-
-const TESTIMONIALS: Testimonial[] = [
+const FALLBACK_TESTIMONIALS = [
   {
     quote:
       "We had a half-built product that had been stuck for 3 months. GetCodeFree scoped it in a day, shipped it in 4 weeks. It's now our main demo for investors.",
@@ -26,18 +22,41 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ]
 
-const TestimonialsSection = () => {
+interface TestimonialsSectionProps {
+  testimonials?: Testimonial[]
+  header?: SectionHeader
+}
+
+function mapTestimonials(rows: Testimonial[]) {
+  if (!rows.length) return FALLBACK_TESTIMONIALS
+  return rows.map((t) => ({
+    quote: t.testimonial_text,
+    name: t.client_name,
+    role: [t.client_title, t.client_company].filter(Boolean).join(" · ") || "Client",
+    initial: t.client_name.charAt(0).toUpperCase(),
+  }))
+}
+
+const TestimonialsSection = ({
+  testimonials = [],
+  header = DEFAULT_SECTION_HEADERS.testimonials,
+}: TestimonialsSectionProps) => {
+  const items = mapTestimonials(testimonials)
+
   return (
     <section id="testimonials" className="section">
       <div className="container-x">
         <div className="max-w-2xl reveal-up">
-          <span className="eyebrow">What clients say</span>
-          <h2 className="section-title mt-4">Real feedback. No padding.</h2>
+          {header.eyebrow && <span className="eyebrow">{header.eyebrow}</span>}
+          <h2 className="section-title mt-4">
+            {header.title}{" "}
+            {header.titleHighlight && <span className="hl-grad">{header.titleHighlight}</span>}
+          </h2>
         </div>
 
         <div className="mt-12 grid gap-5 md:grid-cols-2">
-          {TESTIMONIALS.map((t) => (
-            <figure key={t.name} className="card-3d interactive-card flex flex-col p-7 md:p-8">
+          {items.map((t) => (
+            <figure key={t.name + t.quote.slice(0, 20)} className="card-3d interactive-card flex flex-col p-7 md:p-8">
               <Quote className="h-8 w-8 text-[var(--color-primary)] opacity-40" />
               <blockquote className="mt-4 flex-1 text-lg text-[var(--color-text)]" style={{ lineHeight: 1.55 }}>
                 “{t.quote}”

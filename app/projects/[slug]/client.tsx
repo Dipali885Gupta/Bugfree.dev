@@ -98,7 +98,7 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
 
       <section className="pb-12 md:pb-16">
         <div className="container-x">
-          <FadeInSection delay={0.3}><ProjectHeroImage slug={project.slug} /></FadeInSection>
+          <FadeInSection delay={0.3}><ProjectHeroImage slug={project.slug} heroImage={project.heroImage} /></FadeInSection>
         </div>
       </section>
 
@@ -207,7 +207,7 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
               Screenshots & previews
             </h2>
           </FadeInSection>
-          <FadeInSection delay={0.15}><ProjectGallery slug={project.slug} /></FadeInSection>
+          <FadeInSection delay={0.15}><ProjectGallery slug={project.slug} galleryImages={project.galleryImages} /></FadeInSection>
         </div>
       </section>
 
@@ -218,7 +218,7 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
               System architecture
             </h2>
           </FadeInSection>
-          <FadeInSection delay={0.2}><ProjectFeatureImage slug={project.slug} /></FadeInSection>
+          <FadeInSection delay={0.2}><ProjectFeatureImage slug={project.slug} heroImage={project.heroImage} /></FadeInSection>
         </div>
       </section>
 

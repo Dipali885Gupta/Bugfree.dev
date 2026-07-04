@@ -1,7 +1,9 @@
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/footer"
 import ProjectCard from "@/components/ProjectCard"
-import { getAllProjects } from "@/lib/projects"
+import { getAllProjectsDB } from "@/lib/supabase/queries"
+import { mapProjects } from "@/lib/cms/mappers"
+import type { Project } from "@/lib/projects"
 
 export const metadata = {
   title: "Our Work | Bugfree.dev",
@@ -17,8 +19,9 @@ const FILTERS = [
   { key: "automations", label: "Automations" },
 ]
 
-export default function ProjectsPage() {
-  const projects = getAllProjects()
+export default async function ProjectsPage() {
+  const dbProjects = await getAllProjectsDB()
+  const projects: Project[] = mapProjects(dbProjects as any)
 
   return (
     <main className="min-h-screen">

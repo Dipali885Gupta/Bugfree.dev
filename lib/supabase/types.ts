@@ -495,6 +495,207 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_sections: {
+        Row: {
+          key: string
+          eyebrow: string | null
+          title: string | null
+          title_highlight: string | null
+          subtitle: string | null
+          extra: Json | null
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          eyebrow?: string | null
+          title?: string | null
+          title_highlight?: string | null
+          subtitle?: string | null
+          extra?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          eyebrow?: string | null
+          title?: string | null
+          title_highlight?: string | null
+          subtitle?: string | null
+          extra?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_proof_items: {
+        Row: {
+          id: string
+          icon_name: string
+          label: string
+          display_order: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          icon_name?: string
+          label: string
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          icon_name?: string
+          label?: string
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      metrics_items: {
+        Row: {
+          id: string
+          icon_name: string
+          value: string
+          label: string
+          description: string | null
+          display_order: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          icon_name?: string
+          value: string
+          label: string
+          description?: string | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          icon_name?: string
+          value?: string
+          label?: string
+          description?: string | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      tech_stack_items: {
+        Row: {
+          id: string
+          label: string
+          row_number: number
+          display_order: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          row_number?: number
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          row_number?: number
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      developer_profile: {
+        Row: {
+          id: string
+          name: string
+          role: string | null
+          location: string | null
+          experience: string | null
+          tagline: string | null
+          avatar_initials: string | null
+          avatar_url: string | null
+          section_subtitle: string | null
+          highlights: Json | null
+          approach: Json | null
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          role?: string | null
+          location?: string | null
+          experience?: string | null
+          tagline?: string | null
+          avatar_initials?: string | null
+          avatar_url?: string | null
+          section_subtitle?: string | null
+          highlights?: Json | null
+          approach?: Json | null
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          role?: string | null
+          location?: string | null
+          experience?: string | null
+          tagline?: string | null
+          avatar_initials?: string | null
+          avatar_url?: string | null
+          section_subtitle?: string | null
+          highlights?: Json | null
+          approach?: Json | null
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_preview_cards: {
+        Row: {
+          id: string
+          name: string
+          card_type: string
+          accent_color: string | null
+          gradient_from: string | null
+          gradient_to: string | null
+          display_order: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          card_type?: string
+          accent_color?: string | null
+          gradient_from?: string | null
+          gradient_to?: string | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          card_type?: string
+          accent_color?: string | null
+          gradient_from?: string | null
+          gradient_to?: string | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

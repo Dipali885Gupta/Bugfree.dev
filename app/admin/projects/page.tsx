@@ -10,24 +10,44 @@ import { toast } from 'sonner'
 import type { Project } from '@/lib/supabase/types'
 import Image from 'next/image'
 
+type ProjectRow = Project & {
+  slug?: string | null
+  industry?: string | null
+  categories?: string[] | null
+  tagline?: string | null
+  long_description?: string | null
+  architecture?: string | null
+  outcomes?: string[] | null
+  testimonial_quote?: string | null
+  testimonial_author?: string | null
+  testimonial_role?: string | null
+  featured?: boolean | null
+  metrics?: MetricItem[]
+  hero_image_url?: string | null
+  gallery_images?: string[] | null
+}
+
+type MetricItem = { value: string; label: string }
+
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects] = useState<ProjectRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [editingProject, setEditingProject] = useState<ProjectRow | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
   const [tagsInputValue, setTagsInputValue] = useState('')
+  const [categoriesInputValue, setCategoriesInputValue] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const galleryInputRef = useRef<HTMLInputElement>(null)
   const supabase = useMemo(() => createClient() as any, [])
 
   useEffect(() => {
     fetchProjects()
   }, [])
 
-  // Sync tags input value ONLY when a different project is opened for editing
+  // Sync tags and categories input value ONLY when a different project is opened for editing
   const lastEditingProjectId = useRef<string | null>(null)
   useEffect(() => {
     const currentId = editingProject?.id ?? null
@@ -35,8 +55,10 @@ export default function ProjectsPage() {
       lastEditingProjectId.current = currentId
       if (editingProject) {
         setTagsInputValue(editingProject.tags?.join(', ') || '')
+        setCategoriesInputValue(editingProject.categories?.join(', ') || '')
       } else {
         setTagsInputValue('')
+        setCategoriesInputValue('')
       }
     }
   }, [editingProject])
@@ -49,10 +71,17 @@ export default function ProjectsPage() {
       .order('display_order')
 
     if (error) {
-      toast.error('Failed to fetch projects')
+      console.error('[ProjectsAdmin] fetch error:', error)
+      toast.error(`Load failed: ${error.message}`)
+      setProjects([])
+    } else {
+      const rows = (data as unknown as ProjectRow[]) ?? []
+      console.log('[ProjectsAdmin] rows:', rows.length, rows.map((r) => ({ id: r.id?.slice(0, 8), title: r.title, slug: r.slug })))
+      setProjects(rows)
+      if (!error && rows.length === 0) {
+        toast.error('projects table is empty — no DB rows found')
+      }
     }
-
-    setProjects(data || [])
     setIsLoading(false)
   }
 
@@ -60,14 +89,28 @@ export default function ProjectsPage() {
     setEditingProject({
       id: '',
       title: '',
+      slug: '',
+      tagline: '',
       description: '',
+      long_description: '',
       image_url: '',
       tags: [],
+      categories: [],
+      industry: '',
       project_url: '',
       video_url: '',
       status: 'In Progress',
       display_order: projects.length + 1,
       is_active: true,
+      featured: false,
+      architecture: '',
+      outcomes: [],
+      testimonial_quote: '',
+      testimonial_author: '',
+      testimonial_role: '',
+      metrics: [],
+      hero_image_url: '',
+      gallery_images: [],
       created_at: '',
       updated_at: '',
     })
@@ -78,47 +121,54 @@ export default function ProjectsPage() {
     setIsSaving(true)
 
     try {
+      const extendedData = {
+        title: editingProject.title,
+        slug: editingProject.slug || null,
+        tagline: editingProject.tagline || null,
+        description: editingProject.description || null,
+        long_description: editingProject.long_description || null,
+        image_url: editingProject.image_url || null,
+        tags: editingProject.tags || null,
+        categories: editingProject.categories || null,
+        industry: editingProject.industry || null,
+        project_url: editingProject.project_url || null,
+        video_url: editingProject.video_url || null,
+        status: editingProject.status || null,
+        display_order: editingProject.display_order,
+        is_active: editingProject.is_active,
+        featured: editingProject.featured ?? false,
+        architecture: editingProject.architecture || null,
+        outcomes: editingProject.outcomes || null,
+        testimonial_quote: editingProject.testimonial_quote || null,
+        testimonial_author: editingProject.testimonial_author || null,
+        testimonial_role: editingProject.testimonial_role || null,
+        hero_image_url: editingProject.hero_image_url || null,
+        gallery_images: editingProject.gallery_images || null,
+      }
+
       if (editingProject.id) {
         const { error } = await supabase
           .from('projects')
           .update({
-            title: editingProject.title,
-            description: editingProject.description,
-            image_url: editingProject.image_url,
-            tags: editingProject.tags,
-            project_url: editingProject.project_url,
-            video_url: editingProject.video_url,
-            status: editingProject.status,
-            display_order: editingProject.display_order,
-            is_active: editingProject.is_active,
+            ...extendedData,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingProject.id)
 
         if (error) throw error
-        
+
         setProjects(projects.map(p => p.id === editingProject.id ? editingProject : p))
         toast.success('Project updated successfully')
       } else {
         const { data, error } = await supabase
           .from('projects')
-          .insert({
-            title: editingProject.title,
-            description: editingProject.description,
-            image_url: editingProject.image_url,
-            tags: editingProject.tags,
-            project_url: editingProject.project_url,
-            video_url: editingProject.video_url,
-            status: editingProject.status,
-            display_order: editingProject.display_order,
-            is_active: editingProject.is_active,
-          })
+          .insert(extendedData)
           .select()
           .single()
 
         if (error) throw error
         if (data) {
-          setProjects([...projects, data as Project])
+          setProjects([...projects, data as unknown as ProjectRow])
           toast.success('Project created successfully')
         }
       }
@@ -153,6 +203,13 @@ export default function ProjectsPage() {
     setTagsInputValue(value) // Keep raw input for natural typing
     const tags = value.split(',').map(tag => tag.trim()).filter(Boolean)
     setEditingProject({ ...editingProject, tags })
+  }
+
+  const handleCategoriesChange = (value: string) => {
+    if (!editingProject) return
+    setCategoriesInputValue(value)
+    const categories = value.split(',').map(c => c.trim()).filter(Boolean)
+    setEditingProject({ ...editingProject, categories })
   }
 
   const handleMoveProject = async (projectId: string, direction: 'up' | 'down') => {
@@ -301,6 +358,72 @@ export default function ProjectsPage() {
     }
   }
 
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || !editingProject) return
+
+    setIsUploading(true)
+
+    try {
+      const newUrls: string[] = []
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error(`${file.name} exceeds 5MB limit`)
+          continue
+        }
+
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('project-images')
+          .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('project-images')
+          .getPublicUrl(fileName)
+
+        newUrls.push(publicUrl)
+      }
+
+      if (newUrls.length > 0) {
+        const existing = (editingProject as ProjectRow).gallery_images ?? []
+        setEditingProject({
+          ...editingProject,
+          gallery_images: [...existing, ...newUrls],
+        } as ProjectRow)
+        toast.success(`${newUrls.length} image(s) added to gallery`)
+      }
+    } catch (error) {
+      console.error('Gallery upload error:', error)
+      toast.error('Failed to upload gallery images')
+    } finally {
+      setIsUploading(false)
+      if (galleryInputRef.current) galleryInputRef.current.value = ''
+    }
+  }
+
+  const handleAddGalleryUrl = (url: string) => {
+    if (!url.trim() || !editingProject) return
+    const existing = (editingProject as ProjectRow).gallery_images ?? []
+    setEditingProject({
+      ...editingProject,
+      gallery_images: [...existing, url.trim()],
+    } as ProjectRow)
+  }
+
+  const handleRemoveGalleryImage = (index: number) => {
+    if (!editingProject) return
+    const existing = (editingProject as ProjectRow).gallery_images ?? []
+    setEditingProject({
+      ...editingProject,
+      gallery_images: existing.filter((_, i) => i !== index),
+    } as ProjectRow)
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -342,13 +465,43 @@ export default function ProjectsPage() {
             </h2>
             
             <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Project Title</label>
-                <Input
-                  value={editingProject.title}
-                  onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
-                  placeholder="My Awesome Project"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Project Title</label>
+                  <Input
+                    value={editingProject.title}
+                    onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
+                    placeholder="My Awesome Project"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Slug (URL key)</label>
+                  <Input
+                    value={editingProject.slug ?? ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, slug: e.target.value })}
+                    placeholder="my-awesome-project"
+                  />
+                  <p className="text-xs text-muted-foreground">Used in URL: /projects/[slug]. Must be unique.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Tagline (short headline)</label>
+                  <Input
+                    value={editingProject.tagline ?? ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, tagline: e.target.value })}
+                    placeholder="One-line description shown on card"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Industry</label>
+                  <Input
+                    value={editingProject.industry ?? ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, industry: e.target.value })}
+                    placeholder="e.g. Mobile · EdTech"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -359,6 +512,16 @@ export default function ProjectsPage() {
                   rows={3}
                   placeholder="A brief description of the project..."
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Categories (comma separated)</label>
+                <Input
+                  value={categoriesInputValue}
+                  onChange={(e) => handleCategoriesChange(e.target.value)}
+                  placeholder="mobile, web, ai, automations, featured"
+                />
+                <p className="text-xs text-muted-foreground">Used for filtering on landing page. Options: mobile, web, ai, automations, featured</p>
               </div>
 
               <div className="space-y-2">
@@ -429,6 +592,126 @@ export default function ProjectsPage() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Hero Image (used in project detail header) */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Hero Image (project detail page)</label>
+                <Input
+                  value={(editingProject as ProjectRow).hero_image_url ?? ''}
+                  onChange={(e) => setEditingProject({ ...editingProject, hero_image_url: e.target.value } as ProjectRow)}
+                  placeholder="https://images.unsplash.com/..."
+                />
+                {(editingProject as ProjectRow).hero_image_url && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-border relative">
+                    <Image
+                      src={(editingProject as ProjectRow).hero_image_url!}
+                      alt="Hero preview"
+                      width={400}
+                      height={200}
+                      className="w-full h-40 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditingProject({ ...editingProject, hero_image_url: '' } as ProjectRow)}
+                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">Optional: Large hero image shown at top of project detail page</p>
+              </div>
+
+              {/* Gallery Images */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Gallery Images (shown in project detail)</label>
+
+                {/* Upload Area */}
+                <div
+                  className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => galleryInputRef.current?.click()}
+                >
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryUpload}
+                    className="hidden"
+                  />
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">Uploading...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <Upload className="w-6 h-6 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Click to add multiple images</span>
+                      <span className="text-xs text-muted-foreground">PNG, JPG up to 5MB each</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Add via URL */}
+                <div className="flex gap-2">
+                  <Input
+                    id="gallery-url-input"
+                    placeholder="Paste image URL to add..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const input = e.currentTarget as HTMLInputElement
+                        handleAddGalleryUrl(input.value)
+                        input.value = ''
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const input = document.getElementById('gallery-url-input') as HTMLInputElement
+                      if (input?.value) {
+                        handleAddGalleryUrl(input.value)
+                        input.value = ''
+                      }
+                    }}
+                  >
+                    Add URL
+                  </Button>
+                </div>
+
+                {/* Gallery Grid */}
+                {((editingProject as ProjectRow).gallery_images ?? []).length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 mt-3">
+                    {(editingProject as ProjectRow).gallery_images!.map((url, index) => (
+                      <div key={index} className="relative rounded-lg overflow-hidden border border-border group">
+                        <Image
+                          src={url}
+                          alt={`Gallery ${index + 1}`}
+                          width={200}
+                          height={120}
+                          className="w-full h-24 object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGalleryImage(index)}
+                          className="absolute top-1 right-1 p-1 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                        >
+                          <Trash2 className="w-3 h-3 text-white" />
+                        </button>
+                        <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/50 rounded text-[0.6rem] text-white">
+                          {index + 1}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {(editingProject as ProjectRow).gallery_images?.length ?? 0} image(s) — shown in project detail gallery
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -527,6 +810,126 @@ export default function ProjectsPage() {
                 <p className="text-xs text-muted-foreground">Lower numbers appear first</p>
               </div>
 
+              {/* Featured Toggle */}
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Featured</label>
+                  <p className="text-xs text-muted-foreground">Featured projects appear on the landing page grid</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingProject({ ...editingProject, featured: !editingProject.featured })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    editingProject.featured ? 'bg-primary' : 'bg-muted-foreground/30'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      editingProject.featured ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Metrics (value | label per line) */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Metrics (value | label per line)</label>
+                <Textarea
+                  className="font-mono text-xs"
+                  placeholder={"10k+ | Downloads\n85% | Retention\n4.8 | App Rating"}
+                  rows={4}
+                  value={(
+                    (editingProject as ProjectRow).metrics ?? []
+                  )
+                    .map((m) => `${m.value} | ${m.label}`)
+                    .join('\n')}
+                  onChange={(e) => {
+                    const lines = e.target.value.split('\n').filter(Boolean)
+                    const metrics = lines.map((line) => {
+                      const [value, ...rest] = line.split('|')
+                      return { value: value.trim(), label: rest.join('|').trim() }
+                    })
+                    setEditingProject({ ...editingProject, metrics } as ProjectRow)
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">Shown in the top-right metric cards on the project detail page</p>
+              </div>
+
+              {/* Outcomes (one per line) */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Outcomes (one per line)</label>
+                <Textarea
+                  placeholder={"Achieved 85% user retention through engagement-first design\nReached 4.8 star rating on App Store"}
+                  rows={4}
+                  value={((editingProject as ProjectRow).outcomes ?? []).join('\n')}
+                  onChange={(e) =>
+                    setEditingProject({
+                      ...editingProject,
+                      outcomes: e.target.value.split('\n').filter(Boolean),
+                    } as ProjectRow)
+                  }
+                />
+                <p className="text-xs text-muted-foreground">Shown in the "Outcomes & results" section on the project detail page</p>
+              </div>
+
+              {/* Long Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Long Description</label>
+                <Textarea
+                  placeholder="Full project description with multiple paragraphs (separate paragraphs with a blank line)..."
+                  rows={6}
+                  value={(editingProject as ProjectRow).long_description ?? ''}
+                  onChange={(e) =>
+                    setEditingProject({ ...editingProject, long_description: e.target.value } as ProjectRow)
+                  }
+                />
+                <p className="text-xs text-muted-foreground">Shown in the "About this project" section on the detail page. Use blank lines to separate paragraphs.</p>
+              </div>
+
+              {/* Architecture */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Architecture (monospace)</label>
+                <Textarea
+                  className="font-mono text-xs"
+                  placeholder={"React Native App\n  ↓\nNode.js REST API\n  ↓\nSupabase (Auth + PostgreSQL)"}
+                  rows={6}
+                  value={(editingProject as ProjectRow).architecture ?? ''}
+                  onChange={(e) =>
+                    setEditingProject({ ...editingProject, architecture: e.target.value } as ProjectRow)
+                  }
+                />
+                <p className="text-xs text-muted-foreground">Shown in the "Architecture" code block on the detail page</p>
+              </div>
+
+              {/* Testimonial */}
+              <div className="space-y-3 rounded-lg border border-border p-4 bg-muted/10">
+                <label className="text-sm font-medium text-foreground">Client Testimonial</label>
+                <Input
+                  placeholder="Quote from the client"
+                  value={(editingProject as ProjectRow).testimonial_quote ?? ''}
+                  onChange={(e) =>
+                    setEditingProject({ ...editingProject, testimonial_quote: e.target.value } as ProjectRow)
+                  }
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Author name"
+                    value={(editingProject as ProjectRow).testimonial_author ?? ''}
+                    onChange={(e) =>
+                      setEditingProject({ ...editingProject, testimonial_author: e.target.value } as ProjectRow)
+                    }
+                  />
+                  <Input
+                    placeholder="Role / Company"
+                    value={(editingProject as ProjectRow).testimonial_role ?? ''}
+                    onChange={(e) =>
+                      setEditingProject({ ...editingProject, testimonial_role: e.target.value } as ProjectRow)
+                    }
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Optional client quote shown on the detail page</p>
+              </div>
+
               {/* Visibility Toggle */}
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border">
                 <div>
@@ -598,6 +1001,11 @@ export default function ProjectsPage() {
             <div className="p-4 space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-semibold text-foreground">{project.title}</h3>
+                {(project as ProjectRow).slug && (
+                  <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted">
+                    /{(project as ProjectRow).slug}
+                  </span>
+                )}
                 <div className="flex items-center gap-0.5 flex-shrink-0">
                   <button
                     onClick={() => handleMoveProject(project.id, 'up')}

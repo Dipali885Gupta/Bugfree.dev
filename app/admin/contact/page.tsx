@@ -5,17 +5,26 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Save, Eye, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Save, Eye, Plus, Trash2, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ContactSection, FaqItem, BudgetOption } from '@/lib/supabase/types'
 
+type LandingSectionRow = {
+  key: string
+  eyebrow: string | null
+  title: string | null
+  title_highlight: string | null
+  subtitle: string | null
+}
+
 export default function ContactPage() {
   const [contactData, setContactData] = useState<ContactSection | null>(null)
+  const [sectionHeader, setSectionHeader] = useState<LandingSectionRow | null>(null)
   const [faqs, setFaqs] = useState<FaqItem[]>([])
   const [budgetOptions, setBudgetOptions] = useState<BudgetOption[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [activeTab, setActiveTab] = useState<'content' | 'faq' | 'budget'>('content')
+  const [activeTab, setActiveTab] = useState<'header' | 'content' | 'faq' | 'budget'>('header')
   const supabase = createClient()
 
   useEffect(() => {
@@ -24,9 +33,10 @@ export default function ContactPage() {
 
   const fetchData = async () => {
     setIsLoading(true)
-    
-    const [contactResult, faqResult, budgetResult] = await Promise.all([
+
+    const [contactResult, headerResult, faqResult, budgetResult] = await Promise.all([
       supabase.from('contact_section').select('*').single(),
+      supabase.from('landing_sections').select('*').eq('key', 'contact').single(),
       supabase.from('faq_items').select('*').order('display_order'),
       supabase.from('budget_options').select('*').order('display_order'),
     ])
@@ -34,17 +44,50 @@ export default function ContactPage() {
     setContactData(contactResult.data || {
       id: '',
       section_title: 'Get In Touch',
-      section_description: 'Get in touch with us to discuss your project.',
+      section_description: 'Tell us about your project and we\'ll get back within 24 hours.',
       form_title: 'Send Us a Message',
-      contact_description: 'Ready to transform your idea into reality?',
+      contact_description: 'Ready to transform your idea into reality? Let\'s talk.',
       is_active: true,
       created_at: '',
       updated_at: '',
     })
 
+    setSectionHeader(headerResult.data || {
+      key: 'contact',
+      eyebrow: '',
+      title: '',
+      title_highlight: '',
+      subtitle: '',
+    })
+
     setFaqs(faqResult.data || [])
     setBudgetOptions(budgetResult.data || [])
     setIsLoading(false)
+  }
+
+  const handleSaveHeader = async () => {
+    if (!sectionHeader) return
+    setIsSaving(true)
+
+    try {
+      const { error } = await supabase
+        .from('landing_sections')
+        .upsert({
+          key: 'contact',
+          eyebrow: sectionHeader.eyebrow || null,
+          title: sectionHeader.title || null,
+          title_highlight: sectionHeader.title_highlight || null,
+          subtitle: sectionHeader.subtitle || null,
+          updated_at: new Date().toISOString(),
+        })
+
+      if (error) throw error
+      toast.success('Section header saved')
+    } catch {
+      toast.error('Failed to save section header')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleSaveContact = async () => {
@@ -89,7 +132,6 @@ export default function ContactPage() {
     }
   }
 
-  // FAQ functions
   const handleAddFaq = async () => {
     const { data, error } = await supabase
       .from('faq_items')
@@ -141,7 +183,6 @@ export default function ContactPage() {
     toast.success('FAQ deleted')
   }
 
-  // Budget Options functions
   const handleAddBudget = async () => {
     const { data, error } = await supabase
       .from('budget_options')
@@ -208,7 +249,7 @@ export default function ContactPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Contact Section</h1>
           <p className="text-muted-foreground mt-1">
-            Manage contact section, FAQs, and budget options
+            Manage contact section, section header, FAQs, and budget options
           </p>
         </div>
         <Button variant="outline" asChild>
@@ -221,7 +262,7 @@ export default function ContactPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border">
-        {(['content', 'faq', 'budget'] as const).map((tab) => (
+        {(['header', 'content', 'faq', 'budget'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -231,10 +272,87 @@ export default function ContactPage() {
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            {tab === 'content' ? 'Content' : tab === 'faq' ? 'FAQ Items' : 'Budget Options'}
+            {tab === 'header' ? 'Section Header' : tab === 'content' ? 'Content' : tab === 'faq' ? 'FAQ Items' : 'Budget Options'}
           </button>
         ))}
       </div>
+
+      {/* Section Header Tab */}
+      {activeTab === 'header' && (
+        <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Section Header</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Controls eyebrow, title, and subtitle shown on the landing page contact section
+              </p>
+            </div>
+            <Button onClick={handleSaveHeader} disabled={isSaving}>
+              {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Save Header
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Eyebrow (small label above title)</label>
+            <Input
+              value={sectionHeader?.eyebrow ?? ''}
+              onChange={(e) => setSectionHeader(prev => prev ? { ...prev, eyebrow: e.target.value } : null)}
+              placeholder="Let's Talk"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Title</label>
+            <Input
+              value={sectionHeader?.title ?? ''}
+              onChange={(e) => setSectionHeader(prev => prev ? { ...prev, title: e.target.value } : null)}
+              placeholder="Ready to build something great?"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Title Highlight (highlighted portion)</label>
+            <Input
+              value={sectionHeader?.title_highlight ?? ''}
+              onChange={(e) => setSectionHeader(prev => prev ? { ...prev, title_highlight: e.target.value } : null)}
+              placeholder="something great"
+            />
+            <p className="text-xs text-muted-foreground">
+              The highlighted portion of the title — shown in gradient color
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Subtitle</label>
+            <Textarea
+              value={sectionHeader?.subtitle ?? ''}
+              onChange={(e) => setSectionHeader(prev => prev ? { ...prev, subtitle: e.target.value } : null)}
+              rows={3}
+              placeholder="Tell us about your project and we&apos;ll get back within 24 hours."
+            />
+          </div>
+
+          {/* Preview */}
+          <div className="rounded-xl border border-border p-6 bg-muted/30">
+            <p className="text-xs text-muted-foreground mb-3 font-medium">Preview</p>
+            <div className="space-y-3">
+              {sectionHeader?.eyebrow && (
+                <span className="eyebrow">{sectionHeader.eyebrow}</span>
+              )}
+              <h2 className="section-title">
+                {sectionHeader?.title || 'Title'}
+                {sectionHeader?.title_highlight && (
+                  <span className="hl-grad"> {sectionHeader.title_highlight}</span>
+                )}
+              </h2>
+              {sectionHeader?.subtitle && (
+                <p className="section-sub max-w-md">{sectionHeader.subtitle}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content Tab */}
       {activeTab === 'content' && (
@@ -253,7 +371,7 @@ export default function ContactPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Section Title</label>
+              <label className="text-sm font-medium text-foreground">Section Title (CTA panel)</label>
               <Input
                 value={contactData?.section_title || ''}
                 onChange={(e) => setContactData(prev => prev ? { ...prev, section_title: e.target.value } : null)}
@@ -272,20 +390,22 @@ export default function ContactPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Section Description</label>
+            <label className="text-sm font-medium text-foreground">Section Description (shown under CTA title)</label>
             <Textarea
               value={contactData?.section_description || ''}
               onChange={(e) => setContactData(prev => prev ? { ...prev, section_description: e.target.value } : null)}
               rows={2}
+              placeholder="Tell us about your project and we&apos;ll get back within 24 hours."
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Contact Description</label>
+            <label className="text-sm font-medium text-foreground">Contact Description (qualification box text is hardcoded — edit in components/contact.tsx)</label>
             <Textarea
               value={contactData?.contact_description || ''}
               onChange={(e) => setContactData(prev => prev ? { ...prev, contact_description: e.target.value } : null)}
               rows={3}
+              placeholder="Ready to transform your idea into reality?"
             />
           </div>
         </div>

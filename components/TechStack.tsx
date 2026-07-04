@@ -1,7 +1,12 @@
 "use client"
 
-const ROW_1 = ["React", "Next.js", "React Native", "Node.js", "Python"]
-const ROW_2 = ["LangChain", "GPT-4o / Claude", "Supabase", "PostgreSQL", "Vercel", "AWS"]
+import { DEFAULT_TECH_STACK, DEFAULT_SECTION_HEADERS } from "@/lib/cms/defaults"
+import type { SectionHeader } from "@/lib/cms/mappers"
+
+interface TechStackProps {
+  rows?: { row1: string[]; row2: string[] }
+  header?: SectionHeader
+}
 
 const Pill = ({ label }: { label: string }) => (
   <span
@@ -12,23 +17,23 @@ const Pill = ({ label }: { label: string }) => (
   </span>
 )
 
-const TechStack = () => {
+const TechStack = ({ rows = DEFAULT_TECH_STACK, header = DEFAULT_SECTION_HEADERS.tech }: TechStackProps) => {
   return (
     <section id="tech" className="section">
       <div className="container-x">
         <div className="max-w-2xl reveal-up">
-          <span className="eyebrow">What we build with</span>
-          <h2 className="section-title mt-4">Frontend · Backend · Mobile · AI · Infrastructure</h2>
+          {header.eyebrow && <span className="eyebrow">{header.eyebrow}</span>}
+          <h2 className="section-title mt-4">{header.title}</h2>
         </div>
 
         <div className="mt-10 flex flex-col gap-4">
           <div className="flex flex-wrap gap-2.5">
-            {ROW_1.map((t) => (
+            {rows.row1.map((t) => (
               <Pill key={t} label={t} />
             ))}
           </div>
           <div className="flex flex-wrap gap-2.5">
-            {ROW_2.map((t) => (
+            {rows.row2.map((t) => (
               <Pill key={t} label={t} />
             ))}
           </div>

@@ -2,65 +2,10 @@
 
 import { useEffect, useRef } from "react"
 import { ArrowRight, CheckCircle, Target, Gauge, Headphones } from "lucide-react"
-
-interface Phase {
-  icon: typeof Target
-  number: string
-  title: string
-  subtitle: string
-  timeline: string
-  body: string
-  outcomes: string[]
-  highlight: string
-}
-
-const PHASES: Phase[] = [
-  {
-    icon: Target,
-    number: "01",
-    title: "Build your MVP",
-    subtitle: "Under 3 weeks",
-    timeline: "Weeks 1–3",
-    body: "We align on your vision, define the scope, and ship a production-grade MVP. No ambiguity, no scope creep — just a working product with real architecture.",
-    outcomes: [
-      "Clear spec with user flows and milestones",
-      "Production-grade MVP deployed on your infra",
-      "Admin dashboard and user auth included",
-      "Clean codebase with full handoff docs",
-    ],
-    highlight: "From zero to deployed in weeks — not months",
-  },
-  {
-    icon: Gauge,
-    number: "02",
-    title: "Iterate & Scale",
-    subtitle: "Ongoing sprints",
-    timeline: "Weekly",
-    body: "Once the MVP is live, we run weekly sprints to ship features, improve UX, optimize performance, and prepare your product for growth.",
-    outcomes: [
-      "Feature sprints with clear priorities",
-      "Performance optimization and scalability hardening",
-      "User feedback integration and UX polish",
-      "Architecture evolution as you grow",
-    ],
-    highlight: "Ship features every week — not every quarter",
-  },
-  {
-    icon: Headphones,
-    number: "03",
-    title: "Support & Partner",
-    subtitle: "Weekly calls",
-    timeline: "Always on",
-    body: "We stay with you. Weekly sync calls, async communication, ongoing maintenance, and strategic advice to keep your product ahead.",
-    outcomes: [
-      "Weekly strategy and progress calls",
-      "Active communication on Slack / WhatsApp",
-      "Bug fixes and hotfix SLA under 24 hours",
-      "Ongoing product and growth consulting",
-    ],
-    highlight: "A partner who cares about outcomes — not just output",
-  },
-]
+import { DEFAULT_PROCESS, DEFAULT_SECTION_HEADERS } from "@/lib/cms/defaults"
+import { getIcon } from "@/lib/cms/icons"
+import type { SectionHeader } from "@/lib/cms/mappers"
+import type { ProcessPhase } from "@/lib/cms/defaults"
 
 const TaskItem = ({ label, status }: { label: string; status: "done" | "active" | "queued" }) => (
   <div className="flex items-center gap-2 py-1.5">
@@ -330,7 +275,15 @@ const VISUALS = [
   { component: ChatScreenshot, overlay: null },
 ]
 
-const ProcessSection = () => {
+interface ProcessSectionProps {
+  phases?: ProcessPhase[]
+  header?: SectionHeader
+}
+
+const ProcessSection = ({
+  phases = DEFAULT_PROCESS,
+  header = DEFAULT_SECTION_HEADERS.process,
+}: ProcessSectionProps) => {
   const cardsRef = useRef<(HTMLLIElement | null)[]>([])
   const rafRef = useRef<number>(0)
 
@@ -372,20 +325,19 @@ const ProcessSection = () => {
     <section id="process" className="section" style={{ paddingBottom: 0 }}>
       <div className="container-x mb-10 md:mb-12">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center reveal-up">
-          <span className="eyebrow">Our process</span>
+          {header.eyebrow && <span className="eyebrow">{header.eyebrow}</span>}
           <h2 className="section-title mt-4">
-            Three phases. <span className="hl-grad">Clear outcomes.</span>
+            {header.title}{" "}
+            {header.titleHighlight && <span className="hl-grad">{header.titleHighlight}</span>}
           </h2>
-          <p className="section-sub mt-4">
-            From scope to shipped to scale — we move fast and stay engaged.
-          </p>
+          {header.subtitle && <p className="section-sub mt-4">{header.subtitle}</p>}
         </div>
       </div>
 
       <div className="process-stack-wrapper">
-        <ol className="process-stack" style={{ "--numcards": 3 } as React.CSSProperties}>
-          {PHASES.map((phase, i) => {
-            const Icon = phase.icon
+        <ol className="process-stack" style={{ "--numcards": phases.length } as React.CSSProperties}>
+          {phases.map((phase, i) => {
+            const Icon = getIcon(phase.iconName, Target)
             const Visual = VISUALS[i]
 
             return (
