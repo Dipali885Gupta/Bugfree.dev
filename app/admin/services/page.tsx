@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Save, Plus, Trash2, ExternalLink, Eye, EyeOff, GripVertical } from 'lucide-react'
+import { Loader2, Save, Plus, Trash2, ExternalLink, Eye, EyeOff, GripVertical, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { ICON_OPTIONS } from '@/lib/cms/icons'
 
@@ -35,17 +35,39 @@ export default function ServicesAdminPage() {
 
   const load = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('feature_cards')
-      .select('*')
-      .eq('section', 'services')
-      .order('display_order')
-    if (error) {
-      toast.error('Load failed — run cms-landing-v2.sql migration')
+    let errorMsg = ''
+    let totalRows = 0
+    let servicesRows = 0
+
+    try {
+      const { data, error } = await supabase
+        .from('feature_cards')
+        .select('*')
+        .order('display_order')
+
+      errorMsg = error ? `${error.message} (code: ${error.code})` : ''
+      const all = (data as unknown as ServiceRow[]) ?? []
+      totalRows = all.length
+      const services = all.filter(
+        (c) => (c as any).section === 'services' || (c as any).section == null
+      )
+      servicesRows = services.length
+      setItems(services.map((s) => ({ ...s, is_active: s.is_active ?? true })))
+      console.log('[ServicesAdmin] load result:', { totalRows, servicesRows, errorMsg, firstFew: all.slice(0, 3).map((r) => ({ id: r.id.slice(0, 8), title: r.title, section: (r as any).section })) })
+    } catch (e: any) {
+      errorMsg = e?.message ?? String(e)
+      console.error('[ServicesAdmin] exception:', e)
       setItems([])
-    } else {
-      setItems((data as unknown as ServiceRow[]) ?? [])
     }
+
+    if (errorMsg) {
+      toast.error(`Load failed: ${errorMsg}`)
+    } else if (totalRows === 0) {
+      toast.error('feature_cards table is empty — run schema.sql seed or add services manually')
+    } else if (servicesRows === 0) {
+      toast.error(`Found ${totalRows} rows but none have section='services' or section=NULL. Run cms-landing-v2.sql to add the column.`)
+    }
+
     setLoading(false)
   }
 
@@ -77,13 +99,13 @@ export default function ServicesAdminPage() {
       .from('feature_cards')
       .update({
         section: 'services',
-        item_key: item.item_key,
+        item_key: item.item_key || null,
         icon_name: item.icon_name,
         title: item.title,
-        badge: item.badge,
-        description: item.description,
-        bullets: item.bullets,
-        details: item.details,
+        badge: item.badge || null,
+        description: item.description || null,
+        bullets: item.bullets || null,
+        details: item.details || null,
         display_order: item.display_order,
         is_active: item.is_active,
       } as never)

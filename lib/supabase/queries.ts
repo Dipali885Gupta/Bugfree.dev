@@ -103,6 +103,27 @@ export async function getProjects(): Promise<Project[]> {
   return data || []
 }
 
+export async function getAllProjectsDB() {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .order('display_order')
+  if (error) return []
+  return data || []
+}
+
+export async function getProjectBySlugDB(slug: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+  if (error) return null
+  return data
+}
+
 export async function getProcessSteps(): Promise<ProcessStep[]> {
   const supabase = await createClient()
   const { data, error } = await supabase

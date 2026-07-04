@@ -3,35 +3,37 @@ import { notFound } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/footer"
 import ProjectDetailClient from "./client"
-import { getAllProjects, getProjectBySlug } from "@/lib/projects"
-import type { Metadata } from "next"
+import { getAllProjectsDB, getProjectBySlugDB } from "@/lib/supabase/queries"
+import { mapProjects, mapDbProjectToLanding } from "@/lib/cms/mappers"
+import type { Project } from "@/lib/projects"
+
+export const dynamic = "force-dynamic"
 
 interface Props {
   params: Promise<{ slug: string }>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<import("next").Metadata> {
   const { slug } = await params
-  const project = getProjectBySlug(slug)
+  const dbProject = await getProjectBySlugDB(slug)
+  if (!dbProject) return { title: "Project Not Found" }
+  const project = mapDbProjectToLanding(dbProject as any)
   if (!project) return { title: "Project Not Found" }
-
   return {
     title: `${project.name} | Bugfree.dev`,
     description: project.description,
   }
 }
 
-export async function generateStaticParams() {
-  const projects = getAllProjects()
-  return projects.map((p) => ({ slug: p.slug }))
-}
-
 export default async function ProjectDetailPage({ params }: Props) {
   const { slug } = await params
-  const project = getProjectBySlug(slug)
-  if (!project) notFound()
+  const dbProject = await getProjectBySlugDB(slug)
+  if (!dbProject) notFound()
 
-  const allProjects = getAllProjects()
+  const project = mapDbProjectToLanding(dbProject as any) as Project
+
+  const allDbProjects = await getAllProjectsDB()
+  const allProjects = mapProjects(allDbProjects as any)
   const currentIndex = allProjects.findIndex((p) => p.slug === slug)
   const prevProject = currentIndex > 0 ? allProjects[currentIndex - 1] : null
   const nextProject =

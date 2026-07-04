@@ -119,6 +119,15 @@ export interface ProjectExtended extends Project {
   industry?: string | null
   categories?: string[] | null
   tagline?: string | null
+  long_description?: string | null
+  architecture?: string | null
+  outcomes?: string[] | null
+  metrics?: { value: string; label: string }[] | null
+  testimonial_quote?: string | null
+  testimonial_author?: string | null
+  testimonial_role?: string | null
+  hero_image_url?: string | null
+  gallery_images?: string[] | null
 }
 
 export interface SiteSettingsExtended extends SiteSettings {
@@ -298,15 +307,17 @@ export function mapDbProjectToLanding(p: ProjectExtended): LandingProject | null
     status: p.status || "Live",
     industry: p.industry || "",
     description: p.description || "",
-    longDescription: p.description || "",
+    longDescription: p.long_description || p.description || "",
     image: p.image_url || "",
     stack: p.tags || [],
-    metrics: [],
-    architecture: "",
-    outcomes: [],
+    metrics: (p as any).metrics || [],
+    architecture: p.architecture || "",
+    outcomes: p.outcomes || [],
     categories: p.categories || ["all"],
-    featured: false,
+    featured: (p as any).featured || false,
     order: p.display_order,
+    heroImage: p.hero_image_url || undefined,
+    galleryImages: p.gallery_images || undefined,
   }
 }
 
