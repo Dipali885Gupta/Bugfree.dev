@@ -20,7 +20,7 @@ export function ProjectHeroImage({ slug, heroImage }: { slug: string; heroImage?
   if (heroImage) {
     return (
       <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "rgba(255,255,255,0.08)", boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.06)" }}>
-        <img src={heroImage} alt="Hero" className="w-full object-cover" style={{ maxHeight: "28rem" }} />
+        <img src={heroImage} alt="Hero" className="w-full h-auto" style={{ maxHeight: "28rem", objectFit: "contain" }} />
       </div>
     )
   }
@@ -159,7 +159,7 @@ export function ProjectFeatureImage({ slug, heroImage }: { slug: string; heroIma
   if (heroImage) {
     return (
       <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "rgba(255,255,255,0.08)", boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.06)" }}>
-        <img src={heroImage} alt="Feature" className="w-full object-cover" style={{ maxHeight: "26rem" }} />
+        <img src={heroImage} alt="Feature" className="w-full h-auto" style={{ maxHeight: "26rem", objectFit: "contain" }} />
       </div>
     )
   }

@@ -26,6 +26,7 @@ export interface Project {
   order: number
   heroImage?: string
   galleryImages?: string[]
+  videoUrl?: string
 }
 
 export const PROJECTS: Project[] = [

@@ -838,13 +838,14 @@ export default function ProjectsPage() {
                   className="font-mono text-xs"
                   placeholder={"10k+ | Downloads\n85% | Retention\n4.8 | App Rating"}
                   rows={4}
-                  value={(
+                  defaultValue={(
                     (editingProject as ProjectRow).metrics ?? []
                   )
                     .map((m) => `${m.value} | ${m.label}`)
                     .join('\n')}
-                  onChange={(e) => {
-                    const lines = e.target.value.split('\n').filter(Boolean)
+                  onBlur={(e) => {
+                    const text = e.target.value.replace(/\r\n/g, '\n')
+                    const lines = text.split('\n').filter(Boolean)
                     const metrics = lines.map((line) => {
                       const [value, ...rest] = line.split('|')
                       return { value: value.trim(), label: rest.join('|').trim() }
@@ -852,7 +853,7 @@ export default function ProjectsPage() {
                     setEditingProject({ ...editingProject, metrics } as ProjectRow)
                   }}
                 />
-                <p className="text-xs text-muted-foreground">Shown in the top-right metric cards on the project detail page</p>
+                <p className="text-xs text-muted-foreground">Enter one metric per line: value | label (e.g. 10k+ | Downloads)</p>
               </div>
 
               {/* Outcomes (one per line) */}
@@ -861,15 +862,15 @@ export default function ProjectsPage() {
                 <Textarea
                   placeholder={"Achieved 85% user retention through engagement-first design\nReached 4.8 star rating on App Store"}
                   rows={4}
-                  value={((editingProject as ProjectRow).outcomes ?? []).join('\n')}
-                  onChange={(e) =>
+                  defaultValue={((editingProject as ProjectRow).outcomes ?? []).join('\n')}
+                  onBlur={(e) =>
                     setEditingProject({
                       ...editingProject,
-                      outcomes: e.target.value.split('\n').filter(Boolean),
+                      outcomes: e.target.value.replace(/\r\n/g, '\n').split('\n').filter(Boolean),
                     } as ProjectRow)
                   }
                 />
-                <p className="text-xs text-muted-foreground">Shown in the "Outcomes & results" section on the project detail page</p>
+                <p className="text-xs text-muted-foreground">Enter one outcome per line</p>
               </div>
 
               {/* Long Description */}

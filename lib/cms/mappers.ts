@@ -311,13 +311,14 @@ export function mapDbProjectToLanding(p: ProjectExtended): LandingProject | null
     image: p.image_url || "",
     stack: p.tags || [],
     metrics: (p as any).metrics || [],
-    architecture: p.architecture || "",
+    architecture: (p.architecture || "").replace(/\\n/g, "\n"),
     outcomes: p.outcomes || [],
     categories: p.categories || ["all"],
     featured: (p as any).featured || false,
     order: p.display_order,
     heroImage: p.hero_image_url || undefined,
     galleryImages: p.gallery_images || undefined,
+    videoUrl: (p as any).video_url || undefined,
   }
 }
 
