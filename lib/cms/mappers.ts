@@ -96,6 +96,7 @@ export interface HeroExtended extends HeroSection {
   meta_chips?: { icon_name: string; label: string }[] | null
   panel_cards?: { title: string; body: string; featured: boolean }[] | null
   ticker_items?: string[] | null
+  hero_image_url?: string | null
 }
 
 export interface FeatureCardExtended extends FeatureCard {
@@ -126,8 +127,9 @@ export interface ProjectExtended extends Project {
   testimonial_quote?: string | null
   testimonial_author?: string | null
   testimonial_role?: string | null
+  featured?: boolean | null
   hero_image_url?: string | null
-  gallery_images?: string[] | null
+  gallery_images?: unknown
 }
 
 export interface SiteSettingsExtended extends SiteSettings {
@@ -196,6 +198,7 @@ export function mapHero(raw: HeroSection | null) {
       : DEFAULT_HERO.metaChips,
     panelCards: h.panel_cards?.length ? h.panel_cards : DEFAULT_HERO.panelCards,
     tickerItems: h.ticker_items?.length ? h.ticker_items : DEFAULT_HERO.tickerItems,
+    heroImage: h.hero_image_url || undefined,
   }
 }
 
@@ -300,6 +303,17 @@ export function mapDeveloper(raw: DeveloperProfileRow | null, header: SectionHea
 
 export function mapDbProjectToLanding(p: ProjectExtended): LandingProject | null {
   if (!p.slug) return null
+
+  const gallery = normalizeStringArray(p.gallery_images)
+  const heroImage = p.hero_image_url || p.image_url || gallery[0] || undefined
+  const galleryImages =
+    gallery.length > 0
+      ? gallery
+      : heroImage
+        ? [heroImage]
+        : undefined
+  const featureImage = gallery[1] || gallery[0] || heroImage || undefined
+
   return {
     slug: p.slug,
     name: p.title,
@@ -308,17 +322,52 @@ export function mapDbProjectToLanding(p: ProjectExtended): LandingProject | null
     industry: p.industry || "",
     description: p.description || "",
     longDescription: p.long_description || p.description || "",
-    image: p.image_url || "",
+    image: p.image_url || heroImage || "",
     stack: p.tags || [],
-    metrics: (p as any).metrics || [],
-    architecture: p.architecture || "",
-    outcomes: p.outcomes || [],
+    metrics: normalizeMetrics(p.metrics),
+    architecture: (p.architecture || "").replace(/\\n/g, "\n"),
+    outcomes: normalizeStringArray(p.outcomes),
     categories: p.categories || ["all"],
-    featured: (p as any).featured || false,
+    featured: Boolean(p.featured),
     order: p.display_order,
-    heroImage: p.hero_image_url || undefined,
-    galleryImages: p.gallery_images || undefined,
+    heroImage,
+    galleryImages,
+    featureImage,
+    videoUrl: p.video_url || undefined,
+    projectUrl: p.project_url || undefined,
+    testimonial: p.testimonial_quote
+      ? {
+          quote: p.testimonial_quote,
+          author: p.testimonial_author || "Client",
+          role: p.testimonial_role || "",
+        }
+      : undefined,
   }
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  if (!value) return []
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+      }
+    } catch {
+      return value.trim() ? [value.trim()] : []
+    }
+  }
+  return []
+}
+
+function normalizeMetrics(value: unknown): { value: string; label: string }[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((m): m is { value: string; label: string } => Boolean(m && typeof m === "object" && "value" in m && "label" in m))
+    .map((m) => ({ value: String(m.value), label: String(m.label) }))
 }
 
 export function mapProjects(dbProjects: Project[]): LandingProject[] {

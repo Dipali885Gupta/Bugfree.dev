@@ -136,6 +136,7 @@ export const DEFAULT_HERO = {
     "Founder-led execution",
     "AI agent systems",
   ],
+  heroImage: undefined as string | undefined,
 }
 
 export const DEFAULT_SECTION_HEADERS: Record<string, SectionHeader> = {

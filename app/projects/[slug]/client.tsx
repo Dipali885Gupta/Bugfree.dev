@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { ProjectHeroImage, ProjectGallery, ProjectFeatureImage } from "@/components/project-images"
+import { ProjectHeroImage, ProjectGallery } from "@/components/project-images"
 import type { Project } from "@/lib/projects"
 
 interface ProjectLink {
@@ -15,6 +15,40 @@ interface Props {
   project: Project
   prevProject: ProjectLink | null
   nextProject: ProjectLink | null
+}
+
+function formatHostname(url: string): string {
+  try {
+    const host = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`).hostname
+    return host.replace(/^www\./, "")
+  } catch {
+    return url.replace(/^https?:\/\//, "").split("/")[0]
+  }
+}
+
+function normalizeUrl(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+function ProjectUrlLink({
+  url,
+  className = "",
+  children,
+}: {
+  url: string
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <a
+      href={normalizeUrl(url)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+    >
+      {children}
+    </a>
+  )
 }
 
 function FadeInSection({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
@@ -49,7 +83,7 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-8">
               <FadeInSection delay={0.1}>
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex flex-wrap items-center gap-3 mb-4">
                   <span
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ background: "var(--color-primary)", boxShadow: "0 0 12px var(--color-primary)" }}
@@ -60,6 +94,19 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
                   <span className="text-xs uppercase tracking-wider text-faint">
                     {project.industry}
                   </span>
+                  {project.projectUrl && (
+                    <ProjectUrlLink
+                      url={project.projectUrl}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-primary)]/30 bg-[rgba(var(--color-primary-rgb),0.08)] px-3 py-1 text-xs font-medium text-[var(--color-primary)] hover:bg-[rgba(var(--color-primary-rgb),0.15)] transition-colors"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                      {formatHostname(project.projectUrl)}
+                    </ProjectUrlLink>
+                  )}
                 </div>
 
                 <h1 className="font-display text-4xl font-bold tracking-tight text-[var(--color-text)] md:text-5xl lg:text-6xl">
@@ -71,6 +118,19 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
                 <p className="mt-6 text-base md:text-lg text-muted leading-relaxed max-w-3xl">
                   {project.description}
                 </p>
+                {project.projectUrl && (
+                  <ProjectUrlLink
+                    url={project.projectUrl}
+                    className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-[var(--color-primary)] hover:underline"
+                  >
+                    Visit live project
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </ProjectUrlLink>
+                )}
               </FadeInSection>
             </div>
 
@@ -149,7 +209,7 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
                 <h2 className="font-display text-2xl font-bold text-[var(--color-text)] mb-6">
                   Tech stack
                 </h2>
-                <div className="flex flex-wrap gap-2 mb-10">
+                <div className="flex flex-wrap gap-2 mb-6">
                   {project.stack.map((tech) => (
                     <span
                       key={tech}
@@ -161,39 +221,19 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
                   ))}
                 </div>
 
-                <h2 className="font-display text-2xl font-bold text-[var(--color-text)] mb-6">
-                  Architecture
-                </h2>
-                <div
-                  className="overflow-hidden rounded-2xl border"
-                  style={{
-                    borderColor: "rgba(255,255,255,0.06)",
-                    background:
-                      "linear-gradient(180deg, var(--color-surface), var(--color-surface-2))",
-                    boxShadow:
-                      "0 25px 60px rgba(var(--color-shadow-rgb),0.3), 0 0 40px rgba(var(--color-primary-rgb),0.05)",
-                  }}
-                >
-                  <div
-                    className="flex items-center gap-2 px-4 py-3 border-b"
-                    style={{ borderColor: "rgba(255,255,255,0.06)" }}
+                {project.projectUrl && (
+                  <ProjectUrlLink
+                    url={project.projectUrl}
+                    className="btn btn-primary w-full justify-center"
                   >
-                    <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                    <span className="ml-auto text-[0.6rem] font-medium text-faint">
-                      architecture.yml
-                    </span>
-                  </div>
-                  <div className="p-5 md:p-6">
-                    <pre
-                      className="whitespace-pre font-mono text-[0.75rem] leading-relaxed md:text-[0.8rem]"
-                      style={{ color: "var(--color-primary)" }}
-                    >
-                      {project.architecture}
-                    </pre>
-                  </div>
-                </div>
+                    Visit {formatHostname(project.projectUrl)}
+                    <svg className="h-4 w-4 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </ProjectUrlLink>
+                )}
               </div>
             </FadeInSection>
           </div>
@@ -208,17 +248,6 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
             </h2>
           </FadeInSection>
           <FadeInSection delay={0.15}><ProjectGallery slug={project.slug} galleryImages={project.galleryImages} /></FadeInSection>
-        </div>
-      </section>
-
-      <section className="py-12 md:py-16">
-        <div className="container-x">
-          <FadeInSection delay={0.1}>
-            <h2 className="font-display text-2xl font-bold text-[var(--color-text)] mb-8">
-              System architecture
-            </h2>
-          </FadeInSection>
-          <FadeInSection delay={0.2}><ProjectFeatureImage slug={project.slug} heroImage={project.heroImage} /></FadeInSection>
         </div>
       </section>
 
@@ -279,19 +308,31 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
                   Let&apos;s discuss how we can apply these patterns to your product.
                 </p>
               </div>
-              <Link href="/#contact" className="btn btn-primary flex-shrink-0">
-                Start a conversation
-                <svg
-                  className="h-4 w-4 ml-2"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                {project.projectUrl && (
+                  <ProjectUrlLink url={project.projectUrl} className="btn btn-secondary">
+                    View live project
+                    <svg className="h-4 w-4 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </ProjectUrlLink>
+                )}
+                <Link href="/#contact" className="btn btn-primary">
+                  Start a conversation
+                  <svg
+                    className="h-4 w-4 ml-2"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </Link>
+              </div>
             </div>
           </FadeInSection>
         </div>

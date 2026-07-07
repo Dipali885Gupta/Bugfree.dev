@@ -124,8 +124,22 @@ const HeroSection = ({ hero = DEFAULT_HERO }: HeroSectionProps) => {
             </div>
           </div>
 
-          {/* RIGHT — glass panel */}
+          {/* RIGHT — hero image or glass panel */}
           <div className="relative">
+            {hero.heroImage ? (
+              <div
+                className="card-3d overflow-hidden"
+                style={{ borderRadius: "1.75rem" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={hero.heroImage}
+                  alt="Product preview"
+                  className="h-full w-full object-cover"
+                  style={{ minHeight: "22rem", maxHeight: "32rem" }}
+                />
+              </div>
+            ) : (
             <div
               className="card-3d p-5 md:p-6"
               style={{ borderRadius: "1.75rem" }}
@@ -170,6 +184,7 @@ const HeroSection = ({ hero = DEFAULT_HERO }: HeroSectionProps) => {
                 )}
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>

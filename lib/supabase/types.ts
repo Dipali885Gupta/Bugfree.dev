@@ -81,6 +81,7 @@ export type Database = {
           subheadline: string | null
           cta_text: string
           cta_link: string
+          hero_image_url?: string | null
           is_active: boolean
           created_at: string
           updated_at: string
@@ -93,6 +94,7 @@ export type Database = {
           subheadline?: string | null
           cta_text?: string
           cta_link?: string
+          hero_image_url?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
@@ -105,6 +107,7 @@ export type Database = {
           subheadline?: string | null
           cta_text?: string
           cta_link?: string
+          hero_image_url?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
