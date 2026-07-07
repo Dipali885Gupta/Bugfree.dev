@@ -19,8 +19,17 @@ const CONFIGS: Record<string, VisualConfig> = {
 export function ProjectHeroImage({ slug, heroImage }: { slug: string; heroImage?: string }) {
   if (heroImage) {
     return (
-      <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "rgba(255,255,255,0.08)", boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.06)" }}>
-        <img src={heroImage} alt="Hero" className="w-full object-cover" style={{ maxHeight: "28rem" }} />
+      <div
+        className="overflow-hidden rounded-2xl border flex items-center justify-center"
+        style={{
+          borderColor: "rgba(255,255,255,0.08)",
+          background: "var(--color-surface-2)",
+          boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.06)",
+          minHeight: "20rem",
+          maxHeight: "32rem",
+        }}
+      >
+        <img src={heroImage} alt="Hero" className="w-full h-full object-contain p-2" style={{ maxHeight: "32rem" }} />
       </div>
     )
   }
@@ -85,22 +94,19 @@ export function ProjectGallery({ slug, galleryImages }: { slug: string; galleryI
   if (galleryImages && galleryImages.length > 0) {
     return (
       <div className="grid gap-6 md:grid-cols-2">
-        {galleryImages.slice(0, 4).map((url, i) => (
-          <div key={i} className="rounded-2xl border overflow-hidden" style={{ borderColor: "rgba(255,255,255,0.08)", boxShadow: "0 20px 50px rgba(0,0,0,0.3)" }}>
-            <img src={url} alt={`Gallery ${i + 1}`} className="w-full object-cover" style={{ minHeight: "16rem", maxHeight: "20rem" }} />
-          </div>
-        ))}
-        {galleryImages.length < 4 && Array.from({ length: 4 - galleryImages.length }).map((_, i) => (
-          <div key={`placeholder-${i}`} className="rounded-2xl border overflow-hidden" style={{ borderColor: "rgba(255,255,255,0.08)", background: "linear-gradient(180deg, #0f172a, #0a0a0f)", boxShadow: "0 20px 50px rgba(0,0,0,0.3)" }}>
-            <div className="flex items-center gap-1.5 px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-              <div className="h-2 w-2 rounded-full bg-[#ff5f57]" />
-              <div className="h-2 w-2 rounded-full bg-[#febc2e]" />
-              <div className="h-2 w-2 rounded-full bg-[#28c840]" />
-            </div>
-            <div className="p-5 flex flex-col items-center justify-center" style={{ minHeight: "16rem" }}>
-              <div className="h-8 w-8 rounded-full mb-2" style={{ background: `${primary}20` }} />
-              <span className="text-xs text-muted">Screenshot {galleryImages.length + i + 1}</span>
-            </div>
+        {galleryImages.map((url, i) => (
+          <div
+            key={`${url}-${i}`}
+            className="rounded-2xl border overflow-hidden flex items-center justify-center"
+            style={{
+              borderColor: "rgba(255,255,255,0.08)",
+              background: "var(--color-surface-2)",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+              minHeight: "16rem",
+              maxHeight: "24rem",
+            }}
+          >
+            <img src={url} alt={`Screenshot ${i + 1}`} className="w-full h-full object-contain p-2" style={{ maxHeight: "24rem" }} />
           </div>
         ))}
       </div>
@@ -155,11 +161,20 @@ export function ProjectGallery({ slug, galleryImages }: { slug: string; galleryI
   )
 }
 
-export function ProjectFeatureImage({ slug, heroImage }: { slug: string; heroImage?: string }) {
-  if (heroImage) {
+export function ProjectFeatureImage({ slug, featureImage }: { slug: string; featureImage?: string }) {
+  if (featureImage) {
     return (
-      <div className="overflow-hidden rounded-2xl border" style={{ borderColor: "rgba(255,255,255,0.08)", boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.06)" }}>
-        <img src={heroImage} alt="Feature" className="w-full object-cover" style={{ maxHeight: "26rem" }} />
+      <div
+        className="overflow-hidden rounded-2xl border flex items-center justify-center"
+        style={{
+          borderColor: "rgba(255,255,255,0.08)",
+          background: "var(--color-surface-2)",
+          boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.06)",
+          minHeight: "18rem",
+          maxHeight: "30rem",
+        }}
+      >
+        <img src={featureImage} alt="Feature" className="w-full h-full object-contain p-2" style={{ maxHeight: "30rem" }} />
       </div>
     )
   }

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Save, Eye, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Save, Eye, Plus, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import Image from 'next/image'
 import { DEFAULT_HERO } from '@/lib/cms/defaults'
 
 type ChipItemAdmin = { iconName: string; label: string }
@@ -30,6 +31,7 @@ type HeroAdminData = {
   meta_chips: ChipItemAdmin[] | null
   panel_cards: PanelCardAdmin[] | null
   ticker_items: string[] | null
+  hero_image_url: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -44,6 +46,8 @@ export default function HeroSectionPage() {
   const [data, setData] = useState<HeroAdminData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -80,6 +84,7 @@ export default function HeroSectionPage() {
       meta_chips: DEFAULT_HERO.metaChips,
       panel_cards: DEFAULT_HERO.panelCards,
       ticker_items: DEFAULT_HERO.tickerItems,
+      hero_image_url: null,
       is_active: true,
       created_at: '',
       updated_at: '',
@@ -105,6 +110,7 @@ export default function HeroSectionPage() {
         meta_chips: heroData.meta_chips ?? defaults.meta_chips,
         panel_cards: heroData.panel_cards ?? defaults.panel_cards,
         ticker_items: heroData.ticker_items ?? defaults.ticker_items,
+        hero_image_url: heroData.hero_image_url ?? null,
         is_active: heroData.is_active ?? true,
         created_at: heroData.created_at ?? '',
         updated_at: heroData.updated_at ?? '',
@@ -136,6 +142,7 @@ export default function HeroSectionPage() {
       meta_chips: data.meta_chips,
       panel_cards: data.panel_cards,
       ticker_items: data.ticker_items,
+      hero_image_url: data.hero_image_url,
       updated_at: new Date().toISOString(),
     }
 
@@ -207,6 +214,33 @@ export default function HeroSectionPage() {
     if (!data) return
     const cards = (data.panel_cards || []).filter((_, i) => i !== index)
     setData({ ...data, panel_cards: cards })
+  }
+
+  const uploadHeroImage = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be under 10MB')
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/upload-image', { method: 'POST', body: formData })
+      const result = await res.json()
+      if (!res.ok || !result.url) throw new Error(result.error || 'Upload failed')
+      setData((prev) => (prev ? { ...prev, hero_image_url: result.url } : prev))
+      toast.success('Hero image uploaded — save to publish')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   if (isLoading) {
@@ -309,6 +343,77 @@ export default function HeroSectionPage() {
             rows={3}
             placeholder="GetCodeFree builds mobile apps..."
           />
+        </div>
+      </div>
+
+      {/* Hero Image */}
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) void uploadHeroImage(file)
+          }}
+        />
+        <div>
+          <h2 className="text-lg font-semibold">Hero Image</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Upload replaces the right-side glass panel on the landing page. Leave empty to show panel cards.
+          </p>
+        </div>
+
+        {data.hero_image_url ? (
+          <div className="relative rounded-xl overflow-hidden border border-border max-w-md">
+            <div className="relative aspect-video bg-muted/20">
+              <Image src={data.hero_image_url} alt="Hero preview" fill className="object-contain p-2" />
+            </div>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="absolute top-2 right-2"
+              onClick={() => setData({ ...data, hero_image_url: null })}
+            >
+              <X className="w-4 h-4 mr-1" /> Remove
+            </Button>
+          </div>
+        ) : (
+          <label
+            className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border p-8 cursor-pointer hover:border-primary/50 transition-colors max-w-md"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {isUploading ? (
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            ) : (
+              <>
+                <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Click to upload hero image</span>
+                <span className="text-xs text-muted-foreground">PNG, JPG, WebP — max 10MB</span>
+              </>
+            )}
+          </label>
+        )}
+
+        <div className="space-y-2 max-w-md">
+          <label className="text-sm font-medium text-foreground">Or paste image URL</label>
+          <div className="flex gap-2">
+            <Input
+              value={data.hero_image_url || ''}
+              onChange={(e) => setData({ ...data, hero_image_url: e.target.value || null })}
+              placeholder="https://..."
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={isUploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 

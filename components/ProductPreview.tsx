@@ -108,6 +108,8 @@ const MobileMock = ({ accent, gradientFrom }: { accent: string; gradientFrom: st
   </div>
 )
 
+const isDashboardType = (type: string) => type.toLowerCase().includes("dashboard")
+
 const ProductCard = ({ product }: { product: ProductCard }) => (
   <div
     className="flex-shrink-0 overflow-hidden"
@@ -118,15 +120,28 @@ const ProductCard = ({ product }: { product: ProductCard }) => (
       boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.05)",
     }}
   >
-    <div style={{ height: "clamp(220px, 22vw, 300px)", position: "relative" }}>
+    <div
+      style={{
+        height: "clamp(220px, 22vw, 300px)",
+        position: "relative",
+        background: product.image ? "var(--color-surface-2)" : undefined,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       {product.image ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={product.image}
           alt={product.name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            padding: "0.5rem",
+          }}
           onError={(e) => {
-            // fallback to mockup if image fails
             const target = e.currentTarget as HTMLImageElement
             target.style.display = "none"
             const parent = target.parentElement
@@ -141,7 +156,7 @@ const ProductCard = ({ product }: { product: ProductCard }) => (
         data-mockup-fallback=""
         style={{ display: product.image ? "none" : "block", width: "100%", height: "100%" }}
       >
-        {product.type === "Dashboard" ? (
+        {isDashboardType(product.type) ? (
           <DashboardMock accent={product.accent} gradientFrom={product.gradientFrom} />
         ) : (
           <MobileMock accent={product.accent} gradientFrom={product.gradientFrom} />
@@ -187,7 +202,7 @@ const ProductPreview = ({
   const allProducts = [...cards, ...cards]
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden py-4 md:py-10">
+    <section id="product-preview" ref={sectionRef} className="relative overflow-hidden py-4 md:py-10">
       <div className="container-x">
         <div className="text-center mb-8 reveal-up">
           {header.eyebrow && <span className="eyebrow">{header.eyebrow}</span>}
@@ -208,10 +223,10 @@ const ProductPreview = ({
         <div className={`ticker ${visible ? "" : "opacity-0"}`}>
           <div className="ticker-track" style={{ animationDuration: "40s" }}>
             {allProducts.map((product, i) => (
-              <div key={`${product.name}-${i}`} style={{ perspective: "1200px" }}>
+              <div key={`${product.name}-${i}`} style={{ perspective: product.image ? undefined : "1200px" }}>
                 <div
                   style={{
-                    transform: "rotateY(-2deg) rotateX(1deg)",
+                    transform: product.image ? undefined : "rotateY(-2deg) rotateX(1deg)",
                     transition: "transform 0.4s var(--ease-enter)",
                   }}
                   className="hover:scale-[1.02]"
