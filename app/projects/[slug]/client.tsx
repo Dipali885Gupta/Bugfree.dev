@@ -162,6 +162,31 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
         </div>
       </section>
 
+      {project.videoUrl && (
+        <section className="pb-12 md:pb-16">
+          <div className="container-x">
+            <FadeInSection delay={0.35}>
+              <div
+                className="overflow-hidden rounded-2xl border flex items-center justify-center"
+                style={{
+                  borderColor: "rgba(255,255,255,0.08)",
+                  background: "var(--color-surface-2)",
+                  boxShadow: "0 25px 60px rgba(var(--color-shadow-rgb),0.4), 0 0 40px rgba(var(--color-primary-rgb),0.06)",
+                }}
+              >
+                <video
+                  src={project.videoUrl}
+                  className="w-full aspect-video object-contain p-2"
+                  controls
+                  playsInline
+                  poster={project.heroImage || undefined}
+                />
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+      )}
+
       <section className="py-12 md:py-16">
         <div className="container-x">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
@@ -233,6 +258,25 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
                       <line x1="10" y1="14" x2="21" y2="3" />
                     </svg>
                   </ProjectUrlLink>
+                )}
+
+                {project.architecture && project.architecture.trim() && (
+                  <div className="mt-8">
+                    <h3 className="font-display text-lg font-bold text-[var(--color-text)] mb-4">
+                      Architecture
+                    </h3>
+                    <pre
+                      className="rounded-xl border p-5 text-sm leading-relaxed overflow-x-auto min-h-[10rem]"
+                      style={{
+                        borderColor: "var(--color-divider)",
+                        background: "rgba(255,255,255,0.02)",
+                        color: "var(--color-text)",
+                        fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                      }}
+                    >
+                      {project.architecture}
+                    </pre>
+                  </div>
                 )}
               </div>
             </FadeInSection>
@@ -338,66 +382,92 @@ export default function ProjectDetailClient({ project, prevProject, nextProject 
         </div>
       </section>
 
-      <section
-        className="border-t py-16 md:py-20"
-        style={{ borderColor: "rgba(255,255,255,0.06)" }}
-      >
-        <div className="container-x">
-          <FadeInSection delay={0.1}>
-            <h2 className="font-display text-2xl font-bold text-[var(--color-text)] mb-10">
-              Other projects
-            </h2>
-          </FadeInSection>
+      {prevProject || nextProject ? (
+        <section
+          className="border-t py-16 md:py-20"
+          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+        >
+          <div className="container-x">
+            <FadeInSection delay={0.1}>
+              <h2 className="font-display text-2xl font-bold text-[var(--color-text)] mb-10">
+                Other projects
+              </h2>
+            </FadeInSection>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {prevProject && (
-              <FadeInSection delay={0.15}>
-                <Link
-                  href={`/projects/${prevProject.slug}`}
-                  className="group card-3d interactive-card block"
-                >
-                  <article className="h-full flex flex-col p-6">
-                    <span className="text-xs text-faint uppercase tracking-wider mb-2">Previous</span>
-                    <h3 className="font-display text-xl font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
-                      {prevProject.name}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted line-clamp-2">{prevProject.description}</p>
-                    <div className="mt-4 flex items-center gap-1.5 text-sm font-medium text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="15 18 9 12 15 6" />
-                      </svg>
-                      Previous project
-                    </div>
-                  </article>
-                </Link>
-              </FadeInSection>
-            )}
+            <div className="grid gap-6 md:grid-cols-2">
+              {prevProject && (
+                <FadeInSection delay={0.15}>
+                  <Link
+                    href={`/projects/${prevProject.slug}`}
+                    className="group card-3d interactive-card block"
+                  >
+                    <article className="h-full flex flex-col p-6">
+                      <span className="text-xs text-faint uppercase tracking-wider mb-2">Previous</span>
+                      <h3 className="font-display text-xl font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+                        {prevProject.name}
+                      </h3>
+                      <p className="mt-2 text-sm text-muted line-clamp-2">{prevProject.description}</p>
+                      <div className="mt-4 flex items-center gap-1.5 text-sm font-medium text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                        Previous project
+                      </div>
+                    </article>
+                  </Link>
+                </FadeInSection>
+              )}
 
-            {nextProject && (
-              <FadeInSection delay={0.2}>
-                <Link
-                  href={`/projects/${nextProject.slug}`}
-                  className="group card-3d interactive-card block"
-                >
-                  <article className="h-full flex flex-col p-6">
-                    <span className="text-xs text-faint uppercase tracking-wider mb-2 text-right">Next</span>
-                    <h3 className="font-display text-xl font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors text-right">
-                      {nextProject.name}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted line-clamp-2 text-right">{nextProject.description}</p>
-                    <div className="mt-4 flex items-center justify-end gap-1.5 text-sm font-medium text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
-                      Next project
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </div>
-                  </article>
-                </Link>
-              </FadeInSection>
-            )}
+              {nextProject && (
+                <FadeInSection delay={0.2}>
+                  <Link
+                    href={`/projects/${nextProject.slug}`}
+                    className="group card-3d interactive-card block"
+                  >
+                    <article className="h-full flex flex-col p-6">
+                      <span className="text-xs text-faint uppercase tracking-wider mb-2 text-right">Next</span>
+                      <h3 className="font-display text-xl font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors text-right">
+                        {nextProject.name}
+                      </h3>
+                      <p className="mt-2 text-sm text-muted line-clamp-2 text-right">{nextProject.description}</p>
+                      <div className="mt-4 flex items-center justify-end gap-1.5 text-sm font-medium text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                        Next project
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </div>
+                    </article>
+                  </Link>
+                </FadeInSection>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section
+          className="border-t py-16 md:py-20"
+          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+        >
+          <div className="container-x">
+            <FadeInSection delay={0.1}>
+              <h2 className="font-display text-2xl font-bold text-[var(--color-text)] mb-10">
+                Other projects
+              </h2>
+            </FadeInSection>
+            <FadeInSection delay={0.15}>
+              <Link
+                href="/projects"
+                className="btn btn-primary w-full justify-center md:w-auto"
+              >
+                <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                View all projects
+              </Link>
+            </FadeInSection>
+          </div>
+        </section>
+      )}
     </article>
   )
 }
