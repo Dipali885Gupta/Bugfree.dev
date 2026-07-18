@@ -28,7 +28,6 @@ import {
   BarChart3,
   Cpu,
   Sparkles,
-  UserCircle,
   Image,
   LayoutGrid,
 } from 'lucide-react'
@@ -45,7 +44,6 @@ const sidebarLinks = [
   { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
   { name: 'About', href: '/admin/about', icon: Users },
   { name: 'Tech Stack', href: '/admin/tech-stack', icon: Cpu },
-  { name: 'Developer Profile', href: '/admin/developer', icon: UserCircle },
   { name: 'Testimonials', href: '/admin/testimonials', icon: Quote },
   { name: 'Contact', href: '/admin/contact', icon: MessageSquare },
   { name: 'Section Headers', href: '/admin/sections', icon: LayoutGrid },
