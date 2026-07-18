@@ -226,6 +226,46 @@ Multi-warehouse IoT Sensors`,
     featured: true,
     order: 5,
   },
+  {
+    slug: "ecomai",
+    name: "EcomAI",
+    tagline: "AI-powered commerce launch and automation platform",
+    status: "Live",
+    industry: "AI · Commerce",
+    description:
+      "AI-powered commerce launch and automation platform that helps businesses go live with a website, mobile app, and operational workflows in under 5 days.",
+    image:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&q=80",
+    longDescription:
+      "EcomAI is not just a website or app builder — it is a full-stack B2B and B2C automation layer that combines commerce infrastructure, credit and collections automation, AI-driven insights, and communication automation into one system.\n\nBuilt as an MVP in under 3 weeks, EcomAI showcases Bugfree.dev's core promise of rapid execution. The platform serves as both a fast-launch engine for digital commerce operations and a practical automation layer for B2B and B2C business operations.\n\nAs a founder-led, AI-native execution system, EcomAI stands apart from generic no-code tools or low-cost agency services — delivering production-grade automation that scales.",
+    stack: ["AI", "Next.js", "Node.js", "Supabase", "PostgreSQL", "WhatsApp API", "Payment Gateway"],
+    metrics: [
+      { value: "3 Weeks", label: "MVP to Launch" },
+      { value: "B2B + B2C", label: "Full Stack" },
+      { value: "AI-driven", label: "Automation Layer" },
+      { value: "5 Days", label: "Go-Live Promise" },
+    ],
+    architecture: `Next.js Frontend (Website + Dashboard)
+  ↓
+Node.js REST API
+  ↓
+Supabase (Auth + PostgreSQL)
+  ↓
+AI Layer (Insights + Automation)
+  ↓
+WhatsApp API + Payment Gateway
+  ↓
+Cloud Infrastructure`,
+    outcomes: [
+      "Built and launched fully functional MVP in under 3 weeks",
+      "Integrated commerce infrastructure with credit and collections automation",
+      "Deployed AI-driven insights and communication automation in production",
+      "Demonstrated rapid execution — from concept to live deployment in 21 days",
+    ],
+    categories: ["ai", "web", "featured"],
+    featured: true,
+    order: 6,
+  },
 ]
 
 export const FEATURED_PROJECTS = PROJECTS.filter((p) => p.featured).sort((a, b) => a.order - b.order)
