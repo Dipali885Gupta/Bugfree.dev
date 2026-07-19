@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   title: "GetCodeFree — Ship your MVP in 3 weeks",
   description:
     "AI-native product engineering studio. We build mobile apps, web platforms, and AI automations for founders — MVPs in ~3 weeks, automations in ~5 days.",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/getcodefree-mark.png", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 }
 
 export default function RootLayout({

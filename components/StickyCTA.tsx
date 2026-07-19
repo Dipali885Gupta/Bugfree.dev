@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { ArrowRight, Calendar, X } from "lucide-react"
 import { SITE } from "@/lib/site"
 
@@ -24,8 +25,14 @@ const StickyCTA = () => {
     >
       <div className="container-x flex items-center justify-between gap-4 py-3 md:py-4">
         <div className="flex items-center gap-3">
-          <span className="hidden h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-primary)] text-sm font-extrabold text-[var(--color-text-inverse)] md:flex">
-            G
+          <span className="hidden h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white md:flex">
+            <Image
+              src="/brand/getcodefree-mark.png"
+              alt=""
+              width={28}
+              height={28}
+              className="object-contain"
+            />
           </span>
           <p className="text-sm text-[var(--color-text)]">
             <span className="hidden md:inline">Ship your MVP in </span>
