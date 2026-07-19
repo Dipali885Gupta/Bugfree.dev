@@ -3,54 +3,62 @@ import Link from "next/link"
 
 interface BrandLogoProps {
   href?: string
-  /** "full" = mark + wordmark image; "mark" = icon only */
+  /** "full" = icon mark + text wordmark; "mark" = icon chip only */
   variant?: "full" | "mark"
   className?: string
-  /** Height in px for the image */
-  height?: number
+  /** Icon chip size in px */
+  size?: number
   showTagline?: boolean
   tagline?: string
   name?: string
 }
 
 /**
- * GetCodeFree brand mark. Light chip behind logo so navy+cyan mark
- * stays readable on the dark primary theme.
+ * GetCodeFree brand mark. The navy/cyan icon needs a light backing to stay
+ * readable on the dark theme, so we use a compact square chip for the icon
+ * only and render the wordmark as theme-colored text — no wide white box.
  */
 export function BrandLogo({
   href = "/",
   variant = "full",
   className = "",
-  height = 36,
+  size = 36,
   showTagline = false,
   tagline,
   name = "GetCodeFree",
 }: BrandLogoProps) {
-  const src =
-    variant === "mark"
-      ? "/brand/getcodefree-mark.png"
-      : "/brand/getcodefree-logo.png"
-  const width = variant === "mark" ? height : Math.round(height * (719 / 365))
+  const chip = (
+    <span
+      className="inline-flex flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white"
+      style={{
+        width: size,
+        height: size,
+        boxShadow: "0 6px 18px rgba(var(--color-shadow-rgb),0.18)",
+      }}
+    >
+      <Image
+        src="/brand/getcodefree-mark.png"
+        alt={name}
+        width={size}
+        height={size}
+        className="object-contain"
+        style={{ width: size * 0.82, height: size * 0.82 }}
+        priority
+      />
+    </span>
+  )
 
   const inner = (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <span
-        className="inline-flex items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-2 py-1 shadow-sm"
-        style={{ boxShadow: "0 4px 16px rgba(var(--color-shadow-rgb),0.12)" }}
-      >
-        <Image
-          src={src}
-          alt={name}
-          width={width}
-          height={height}
-          className="h-auto w-auto object-contain"
-          style={{ height, width: "auto" }}
-          priority
-        />
-      </span>
-      {showTagline && tagline ? (
-        <span className="hidden flex-col leading-none sm:flex">
-          <span className="text-[0.7rem] text-faint">{tagline}</span>
+      {chip}
+      {variant === "full" ? (
+        <span className="flex flex-col leading-none">
+          <span className="font-display text-lg font-extrabold tracking-tight text-[var(--color-text)]">
+            {name}
+          </span>
+          {showTagline && tagline ? (
+            <span className="text-[0.7rem] text-faint">{tagline}</span>
+          ) : null}
         </span>
       ) : null}
     </span>

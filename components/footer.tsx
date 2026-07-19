@@ -19,7 +19,7 @@ const Footer = ({
       <div className="container-x">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_auto]">
           <div>
-            <BrandLogo name={site.name} height={40} variant="full" href="/" />
+            <BrandLogo name={site.name} size={40} variant="full" href="/" />
             <p className="mt-4 max-w-xs text-sm text-muted" style={{ lineHeight: 1.6 }}>
               {site.description}
             </p>

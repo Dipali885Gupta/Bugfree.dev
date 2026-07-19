@@ -68,7 +68,7 @@ const Navbar = ({ site = DEFAULT_SITE, nav = DEFAULT_NAV }: NavbarProps) => {
               name={site.name}
               tagline={site.tagline}
               showTagline
-              height={32}
+              size={38}
               variant="full"
             />
 
