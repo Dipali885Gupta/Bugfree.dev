@@ -146,7 +146,7 @@ const ContactSection = ({
             {/* Qualification box */}
             <div
               className="rounded-[1.5rem] border border-[var(--color-border)] p-6 md:p-7"
-              style={{ background: "rgba(2,8,14,0.55)", backdropFilter: "blur(8px)" }}
+              style={{ background: "var(--color-surface)", backdropFilter: "blur(8px)" }}
             >
               <p className="text-sm font-semibold uppercase tracking-wider text-faint">A good fit if…</p>
               <ul className="mt-4 space-y-3.5">
