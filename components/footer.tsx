@@ -1,4 +1,5 @@
 import { Linkedin, Github, Mail, X } from "lucide-react"
+import { BrandLogo } from "@/components/BrandLogo"
 import { DEFAULT_FOOTER_COMPANY, DEFAULT_FOOTER_SERVICES, DEFAULT_SITE, type SiteConfig } from "@/lib/cms/defaults"
 
 interface FooterProps {
@@ -18,17 +19,7 @@ const Footer = ({
       <div className="container-x">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_auto]">
           <div>
-            <div className="flex items-center gap-3">
-              <span
-                className="grid h-9 w-9 place-items-center rounded-xl font-display text-lg font-extrabold"
-                style={{ background: "var(--color-primary)", color: "var(--color-text-inverse)" }}
-              >
-                G
-              </span>
-              <span className="font-display text-lg font-extrabold tracking-tight text-[var(--color-text)]">
-                {site.name}
-              </span>
-            </div>
+            <BrandLogo name={site.name} height={40} variant="full" href="/" />
             <p className="mt-4 max-w-xs text-sm text-muted" style={{ lineHeight: 1.6 }}>
               {site.description}
             </p>
