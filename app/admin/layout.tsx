@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard,
   FileText,
+  UserPlus,
   Users,
   FolderKanban,
   Workflow,
@@ -48,6 +49,7 @@ const sidebarLinks = [
   { name: 'Contact', href: '/admin/contact', icon: MessageSquare },
   { name: 'Section Headers', href: '/admin/sections', icon: LayoutGrid },
   { name: 'Footer', href: '/admin/footer', icon: Layout },
+  { name: 'Leads', href: '/admin/leads', icon: UserPlus },
   { name: 'Submissions', href: '/admin/submissions', icon: FileText },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]

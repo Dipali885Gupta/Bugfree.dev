@@ -417,6 +417,63 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          id: string
+          name: string
+          email: string | null
+          phone: string | null
+          company: string | null
+          source: string | null
+          source_url: string | null
+          status: string
+          priority: string
+          project_type: string | null
+          budget: string | null
+          notes: string | null
+          last_followup_at: string | null
+          next_followup_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email?: string | null
+          phone?: string | null
+          company?: string | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          priority?: string
+          project_type?: string | null
+          budget?: string | null
+          notes?: string | null
+          last_followup_at?: string | null
+          next_followup_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string | null
+          phone?: string | null
+          company?: string | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          priority?: string
+          project_type?: string | null
+          budget?: string | null
+          notes?: string | null
+          last_followup_at?: string | null
+          next_followup_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           id: string
@@ -728,5 +785,6 @@ export type FaqItem = Database['public']['Tables']['faq_items']['Row']
 export type BudgetOption = Database['public']['Tables']['budget_options']['Row']
 export type FooterLink = Database['public']['Tables']['footer_links']['Row']
 export type ContactSubmission = Database['public']['Tables']['contact_submissions']['Row']
+export type Lead = Database['public']['Tables']['leads']['Row']
 export type Testimonial = Database['public']['Tables']['testimonials']['Row']
 export type AdminProfile = Database['public']['Tables']['admin_profiles']['Row']
