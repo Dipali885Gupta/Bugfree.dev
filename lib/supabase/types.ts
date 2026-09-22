@@ -417,6 +417,54 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_submissions: {
+        Row: {
+          id: string
+          name: string
+          company: string | null
+          email: string
+          whatsapp: string | null
+          linkedin_or_website: string | null
+          work_type: string | null
+          client_types: string | null
+          tech_opportunities: string | null
+          partnership_note: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          company?: string | null
+          email: string
+          whatsapp?: string | null
+          linkedin_or_website?: string | null
+          work_type?: string | null
+          client_types?: string | null
+          tech_opportunities?: string | null
+          partnership_note?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          company?: string | null
+          email?: string
+          whatsapp?: string | null
+          linkedin_or_website?: string | null
+          work_type?: string | null
+          client_types?: string | null
+          tech_opportunities?: string | null
+          partnership_note?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           id: string
@@ -785,6 +833,7 @@ export type FaqItem = Database['public']['Tables']['faq_items']['Row']
 export type BudgetOption = Database['public']['Tables']['budget_options']['Row']
 export type FooterLink = Database['public']['Tables']['footer_links']['Row']
 export type ContactSubmission = Database['public']['Tables']['contact_submissions']['Row']
+export type PartnerSubmission = Database['public']['Tables']['partner_submissions']['Row']
 export type Lead = Database['public']['Tables']['leads']['Row']
 export type Testimonial = Database['public']['Tables']['testimonials']['Row']
 export type AdminProfile = Database['public']['Tables']['admin_profiles']['Row']
