@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { Menu, X, Moon, Sun, Calendar } from "lucide-react"
+import { BrandLogo } from "@/components/BrandLogo"
 import { DEFAULT_NAV, DEFAULT_SITE, type SiteConfig } from "@/lib/cms/defaults"
 
 interface NavbarProps {
@@ -63,24 +64,13 @@ const Navbar = ({ site = DEFAULT_SITE, nav = DEFAULT_NAV }: NavbarProps) => {
             }`}
           >
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3" aria-label={site.name}>
-              <span
-                className="grid h-9 w-9 place-items-center rounded-xl font-display text-lg font-extrabold"
-                style={{
-                  background: "var(--color-primary)",
-                  color: "var(--color-text-inverse)",
-                  boxShadow: "0 8px 22px rgba(var(--color-primary-rgb),0.35)",
-                }}
-              >
-                G
-              </span>
-              <span className="flex flex-col leading-none">
-                <span className="font-display text-lg font-extrabold tracking-tight text-[var(--color-text)]">
-                  {site.name}
-                </span>
-                <span className="text-[0.7rem] text-faint">{site.tagline}</span>
-              </span>
-            </Link>
+            <BrandLogo
+              name={site.name}
+              tagline={site.tagline}
+              showTagline
+              size={38}
+              variant="full"
+            />
 
             {/* Center links */}
             <nav className="hidden items-center gap-8 md:flex">

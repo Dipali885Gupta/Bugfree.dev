@@ -10,7 +10,22 @@ import { toast } from 'sonner'
 import type { SiteSettings } from '@/lib/supabase/types'
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<SiteSettings | null>(null)
+  interface SettingsForm {
+    id: string
+    logo_text: string
+    company_name: string
+    company_description: string | null
+    primary_email: string | null
+    phone_numbers: string[] | null
+    location: string | null
+    linkedin_url: string
+    twitter_url: string
+    github_url: string
+    created_at: string
+    updated_at: string
+  }
+
+  const [settings, setSettings] = useState<SettingsForm | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const supabase = createClient()
@@ -30,7 +45,12 @@ export default function SettingsPage() {
       toast.error('Failed to fetch settings')
     }
 
-    setSettings(data || {
+    setSettings(data ? {
+      ...data,
+      linkedin_url: (data as any).linkedin_url || 'https://www.linkedin.com/company/getcodefree-tech/?viewAsMember=true',
+      twitter_url: (data as any).twitter_url || 'https://x.com/getcodefre',
+      github_url: (data as any).github_url || 'https://github.com/getcodefree',
+    } : {
       id: '',
       logo_text: 'getcodefree.tech',
       company_name: 'BugFree.dev',
@@ -38,6 +58,9 @@ export default function SettingsPage() {
       primary_email: 'contact@bugfree.dev',
       phone_numbers: ['+91 7077404655'],
       location: 'FortuneTower, Chandrasekharpur, Bhubaneswar',
+      linkedin_url: 'https://www.linkedin.com/company/getcodefree-tech/?viewAsMember=true',
+      twitter_url: 'https://x.com/getcodefre',
+      github_url: 'https://github.com/getcodefree',
       created_at: '',
       updated_at: '',
     })
@@ -59,6 +82,9 @@ export default function SettingsPage() {
             primary_email: settings.primary_email,
             phone_numbers: settings.phone_numbers,
             location: settings.location,
+            linkedin_url: settings.linkedin_url,
+            twitter_url: settings.twitter_url,
+            github_url: settings.github_url,
             updated_at: new Date().toISOString(),
           })
           .eq('id', settings.id)
@@ -74,12 +100,15 @@ export default function SettingsPage() {
             primary_email: settings.primary_email,
             phone_numbers: settings.phone_numbers,
             location: settings.location,
+            linkedin_url: settings.linkedin_url,
+            twitter_url: settings.twitter_url,
+            github_url: settings.github_url,
           })
           .select()
           .single()
 
         if (error) throw error
-        if (data) setSettings(data)
+        if (data) setSettings({ ...data, linkedin_url: (data as any).linkedin_url || '', twitter_url: (data as any).twitter_url || '', github_url: (data as any).github_url || '' })
       }
 
       toast.success('Settings saved successfully')
@@ -182,6 +211,37 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Social Links */}
+      <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+        <h2 className="text-lg font-semibold text-foreground">Social Links</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">LinkedIn URL</label>
+            <Input
+              value={settings?.linkedin_url || ''}
+              onChange={(e) => setSettings(prev => prev ? { ...prev, linkedin_url: e.target.value } : null)}
+              placeholder="https://linkedin.com/company/..."
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Twitter / X URL</label>
+            <Input
+              value={settings?.twitter_url || ''}
+              onChange={(e) => setSettings(prev => prev ? { ...prev, twitter_url: e.target.value } : null)}
+              placeholder="https://x.com/..."
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">GitHub URL</label>
+            <Input
+              value={settings?.github_url || ''}
+              onChange={(e) => setSettings(prev => prev ? { ...prev, github_url: e.target.value } : null)}
+              placeholder="https://github.com/..."
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Contact Information */}
       <div className="bg-card border border-border rounded-xl p-6 space-y-6">
         <h2 className="text-lg font-semibold text-foreground">Contact Information</h2>
@@ -249,10 +309,11 @@ export default function SettingsPage() {
           <p className="text-muted-foreground"># Supabase</p>
           <p>NEXT_PUBLIC_SUPABASE_URL=your_supabase_url</p>
           <p>NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key</p>
-          <p className="mt-4 text-muted-foreground"># EmailJS (for contact form)</p>
-          <p>NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_service_id</p>
-          <p>NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id</p>
-          <p>NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_public_key</p>
+          <p className="mt-4 text-muted-foreground"># SMTP (for contact form — set in .env.local)</p>
+          <p>SMTP_HOST=smtp.gmail.com</p>
+          <p>SMTP_PORT=587</p>
+          <p>SMTP_USER=your_email</p>
+          <p>SMTP_PASS=your_app_password</p>
         </div>
       </div>
     </div>

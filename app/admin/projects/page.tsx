@@ -38,6 +38,8 @@ export default function ProjectsPage() {
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
   const [tagsInputValue, setTagsInputValue] = useState('')
   const [categoriesInputValue, setCategoriesInputValue] = useState('')
+  const [metricsText, setMetricsText] = useState('')
+  const [outcomesText, setOutcomesText] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
@@ -47,7 +49,7 @@ export default function ProjectsPage() {
     fetchProjects()
   }, [])
 
-  // Sync tags and categories input value ONLY when a different project is opened for editing
+  // Sync input values ONLY when a different project is opened for editing
   const lastEditingProjectId = useRef<string | null>(null)
   useEffect(() => {
     const currentId = editingProject?.id ?? null
@@ -56,9 +58,17 @@ export default function ProjectsPage() {
       if (editingProject) {
         setTagsInputValue(editingProject.tags?.join(', ') || '')
         setCategoriesInputValue(editingProject.categories?.join(', ') || '')
+        setMetricsText(
+          ((editingProject as ProjectRow).metrics ?? [])
+            .map((m) => `${m.value} | ${m.label}`)
+            .join('\n')
+        )
+        setOutcomesText(((editingProject as ProjectRow).outcomes ?? []).join('\n'))
       } else {
         setTagsInputValue('')
         setCategoriesInputValue('')
+        setMetricsText('')
+        setOutcomesText('')
       }
     }
   }, [editingProject])
@@ -121,6 +131,16 @@ export default function ProjectsPage() {
     setIsSaving(true)
 
     try {
+      const parsedMetrics = metricsText
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => {
+          const [value, ...rest] = line.split('|')
+          return { value: value.trim(), label: rest.join('|').trim() }
+        })
+
+      const parsedOutcomes = outcomesText.split('\n').filter(Boolean)
+
       const extendedData = {
         title: editingProject.title,
         slug: editingProject.slug || null,
@@ -138,12 +158,13 @@ export default function ProjectsPage() {
         is_active: editingProject.is_active,
         featured: editingProject.featured ?? false,
         architecture: editingProject.architecture || null,
-        outcomes: editingProject.outcomes || null,
+        outcomes: parsedOutcomes.length ? parsedOutcomes : null,
         testimonial_quote: editingProject.testimonial_quote || null,
         testimonial_author: editingProject.testimonial_author || null,
         testimonial_role: editingProject.testimonial_role || null,
         hero_image_url: editingProject.hero_image_url || null,
         gallery_images: editingProject.gallery_images || null,
+        metrics: parsedMetrics.length ? parsedMetrics : null,
       }
 
       if (editingProject.id) {
@@ -157,7 +178,11 @@ export default function ProjectsPage() {
 
         if (error) throw error
 
-        setProjects(projects.map(p => p.id === editingProject.id ? editingProject : p))
+        setProjects(projects.map(p =>
+          p.id === editingProject.id
+            ? { ...editingProject, metrics: parsedMetrics, outcomes: parsedOutcomes }
+            : p
+        ))
         toast.success('Project updated successfully')
       } else {
         const { data, error } = await supabase
@@ -168,7 +193,7 @@ export default function ProjectsPage() {
 
         if (error) throw error
         if (data) {
-          setProjects([...projects, data as unknown as ProjectRow])
+          setProjects([...projects, { ...data as unknown as ProjectRow, metrics: parsedMetrics, outcomes: parsedOutcomes }])
           toast.success('Project created successfully')
         }
       }
@@ -838,19 +863,8 @@ export default function ProjectsPage() {
                   className="font-mono text-xs"
                   placeholder={"10k+ | Downloads\n85% | Retention\n4.8 | App Rating"}
                   rows={4}
-                  value={(
-                    (editingProject as ProjectRow).metrics ?? []
-                  )
-                    .map((m) => `${m.value} | ${m.label}`)
-                    .join('\n')}
-                  onChange={(e) => {
-                    const lines = e.target.value.split('\n').filter(Boolean)
-                    const metrics = lines.map((line) => {
-                      const [value, ...rest] = line.split('|')
-                      return { value: value.trim(), label: rest.join('|').trim() }
-                    })
-                    setEditingProject({ ...editingProject, metrics } as ProjectRow)
-                  }}
+                  value={metricsText}
+                  onChange={(e) => setMetricsText(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">Shown in the top-right metric cards on the project detail page</p>
               </div>
@@ -861,13 +875,8 @@ export default function ProjectsPage() {
                 <Textarea
                   placeholder={"Achieved 85% user retention through engagement-first design\nReached 4.8 star rating on App Store"}
                   rows={4}
-                  value={((editingProject as ProjectRow).outcomes ?? []).join('\n')}
-                  onChange={(e) =>
-                    setEditingProject({
-                      ...editingProject,
-                      outcomes: e.target.value.split('\n').filter(Boolean),
-                    } as ProjectRow)
-                  }
+                  value={outcomesText}
+                  onChange={(e) => setOutcomesText(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">Shown in the "Outcomes & results" section on the project detail page</p>
               </div>

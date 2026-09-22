@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, Mail, Check, ArrowRight } from "lucide-react"
 import { toast } from "sonner"
-import emailjs from "@emailjs/browser"
 import { createClient } from "@/lib/supabase/client"
 import { DEFAULT_SECTION_HEADERS, DEFAULT_SITE, type SiteConfig } from "@/lib/cms/defaults"
 import type { SectionHeader } from "@/lib/cms/mappers"
@@ -90,28 +89,26 @@ const ContactSection = ({
         budget: formData.budget || null,
       })
 
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID as string
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID as string
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          projectBrief: formData.projectBrief,
+          budget: formData.budget || null,
+        }),
+      })
 
-      if (serviceId && templateId && publicKey) {
-        const templateParams = {
-          from_name: formData.name,
-          from_email: formData.email,
-          project_brief: formData.projectBrief,
-          budget: formData.budget || "Not specified",
-          to_email: site.bookingEmail || site.email,
-          message: `New project enquiry:\n\nName: ${formData.name}\nEmail: ${formData.email}\nBudget: ${
-            formData.budget || "Not specified"
-          }\nBrief: ${formData.projectBrief}`,
-        }
-        emailjs.init(publicKey)
-        await emailjs.send(serviceId, templateId, templateParams)
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(payload.error || "Failed to send email")
       }
 
       toast.success("Message sent. We'll be in touch shortly.")
       setFormData({ name: "", email: "", projectBrief: "", budget: "" })
-    } catch {
+    } catch (err) {
+      console.error("Contact form submit failed:", err)
       toast.error(`Couldn't send. Email us directly at ${site.email}.`)
     } finally {
       setIsSubmitting(false)
@@ -149,7 +146,7 @@ const ContactSection = ({
             {/* Qualification box */}
             <div
               className="rounded-[1.5rem] border border-[var(--color-border)] p-6 md:p-7"
-              style={{ background: "rgba(2,8,14,0.55)", backdropFilter: "blur(8px)" }}
+              style={{ background: "var(--color-surface)", backdropFilter: "blur(8px)" }}
             >
               <p className="text-sm font-semibold uppercase tracking-wider text-faint">A good fit if…</p>
               <ul className="mt-4 space-y-3.5">

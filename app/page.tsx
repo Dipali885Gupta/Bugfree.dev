@@ -9,7 +9,6 @@ import Projects from "@/components/Projects"
 import AboutSection from "@/components/Aboutus"
 import ProcessSection from "@/components/process"
 import TechStack from "@/components/TechStack"
-import DeveloperCredibility from "@/components/DeveloperCredibility"
 import TestimonialsSection from "@/components/Testimonials"
 import ContactSection from "@/components/contact"
 import Footer from "@/components/footer"
@@ -29,7 +28,6 @@ export default async function Home() {
       <Projects projects={data.projects} header={data.projectsHeader} />
       <AboutSection items={data.about} header={data.aboutHeader} />
       <TechStack rows={data.techStack} header={data.techHeader} />
-      <DeveloperCredibility profile={data.developer} header={data.developerHeader} bookingUrl={data.site.bookingUrl} />
       <TestimonialsSection testimonials={data.testimonials} header={data.testimonialsHeader} />
       <ContactSection
         site={data.site}

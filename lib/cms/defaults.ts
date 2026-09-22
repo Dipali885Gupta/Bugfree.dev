@@ -76,6 +76,7 @@ export interface SiteConfig {
   bookingEmail: string
   bookingUrl: string
   linkedin: string
+  twitter: string
   github: string
   description: string
 }
@@ -87,6 +88,7 @@ export const DEFAULT_SITE: SiteConfig = {
   bookingEmail: SITE.bookingEmail,
   bookingUrl: SITE.bookingUrl,
   linkedin: SITE.social.linkedin,
+  twitter: SITE.social.twitter,
   github: SITE.social.github,
   description:
     "AI-native product engineering studio. We ship mobile apps, web platforms, and AI automations — fast.",

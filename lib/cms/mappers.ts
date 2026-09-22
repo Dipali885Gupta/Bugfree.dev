@@ -137,6 +137,7 @@ export interface SiteSettingsExtended extends SiteSettings {
   booking_url?: string | null
   booking_email?: string | null
   linkedin_url?: string | null
+  twitter_url?: string | null
   github_url?: string | null
   logo_url?: string | null
 }
@@ -163,6 +164,7 @@ export function mapSiteSettings(raw: SiteSettings | null): SiteConfig {
     bookingEmail: s.booking_email || DEFAULT_SITE.bookingEmail,
     bookingUrl: s.booking_url || DEFAULT_SITE.bookingUrl,
     linkedin: s.linkedin_url || DEFAULT_SITE.linkedin,
+    twitter: s.twitter_url || DEFAULT_SITE.twitter,
     github: s.github_url || DEFAULT_SITE.github,
     description: s.company_description || DEFAULT_SITE.description,
   }

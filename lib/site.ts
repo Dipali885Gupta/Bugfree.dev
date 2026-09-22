@@ -3,12 +3,13 @@
 export const SITE = {
   name: "GetCodeFree",
   tagline: "AI-native product studio",
-  email: "hello@getcodefreetech.com",
+  email: "getcodefree.tech@gmail.com",
   bookingEmail: "getcodefree.tech@gmail.com",
   bookingUrl: "https://cal.com/amitav-panda-c6qrd9/15min",
   domain: "getcodefreetech.com",
   social: {
-    linkedin: "https://www.linkedin.com/company/getcodefree",
+    linkedin: "https://www.linkedin.com/company/getcodefree-tech/?viewAsMember=true",
+    twitter: "https://x.com/getcodefre",
     github: "https://github.com/getcodefree",
   },
 } as const

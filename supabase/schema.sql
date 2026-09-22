@@ -171,6 +171,26 @@ CREATE TABLE IF NOT EXISTS footer_links (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Leads / CRM
+CREATE TABLE IF NOT EXISTS leads (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
+  company TEXT,
+  source TEXT DEFAULT 'direct',
+  source_url TEXT,
+  status TEXT DEFAULT 'new',
+  priority TEXT DEFAULT 'medium',
+  project_type TEXT,
+  budget TEXT,
+  notes TEXT,
+  last_followup_at TIMESTAMPTZ,
+  next_followup_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Contact Submissions
 CREATE TABLE IF NOT EXISTS contact_submissions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -230,6 +250,7 @@ ALTER TABLE contact_section ENABLE ROW LEVEL SECURITY;
 ALTER TABLE faq_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE budget_options ENABLE ROW LEVEL SECURITY;
 ALTER TABLE footer_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_profiles ENABLE ROW LEVEL SECURITY;
@@ -261,6 +282,9 @@ CREATE POLICY "Admin full access" ON faq_items FOR ALL USING (auth.role() = 'aut
 CREATE POLICY "Admin full access" ON budget_options FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admin full access" ON footer_links FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admin full access" ON testimonials FOR ALL USING (auth.role() = 'authenticated');
+
+-- Leads: admin full access
+CREATE POLICY "Admin full access" ON leads FOR ALL USING (auth.role() = 'authenticated');
 
 -- Contact submissions: public insert, admin full access
 CREATE POLICY "Public can submit" ON contact_submissions FOR INSERT WITH CHECK (true);

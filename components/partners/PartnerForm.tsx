@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { toast } from "sonner"
-import emailjs from "@emailjs/browser"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
@@ -21,17 +20,6 @@ const EMPTY = {
   clientTypes: "",
   techOpportunities: "",
   partnershipNote: "",
-}
-
-function hasRealEmailJsConfig(serviceId?: string, templateId?: string, publicKey?: string) {
-  const bad = (v?: string) =>
-    !v ||
-    v.startsWith("your_") ||
-    v.includes("EMAILJS_") ||
-    v === "NEXT_PUBLIC_EMAILJS_SERVICE_ID" ||
-    v === "NEXT_PUBLIC_EMAILJS_TEMPLATE_ID" ||
-    v === "NEXT_PUBLIC_EMAILJS_PUBLIC_KEY"
-  return !bad(serviceId) && !bad(templateId) && !bad(publicKey)
 }
 
 export default function PartnerForm() {
@@ -88,36 +76,20 @@ export default function PartnerForm() {
   }
 
   const sendEmailNotification = async (brief: string) => {
-    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID
-    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
-    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
-
-    if (!hasRealEmailJsConfig(serviceId, templateId, publicKey)) {
-      console.warn(
-        "EmailJS keys missing or still placeholders in .env.local — skipping email send."
-      )
-      return false
+    const res = await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        projectBrief: brief,
+        budget: "Partner Network",
+      }),
+    })
+    const payload = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      throw new Error(payload.error || "Failed to send email")
     }
-
-    const templateParams = {
-      from_name: formData.name,
-      from_email: formData.email,
-      project_brief: brief,
-      budget: "Partner Network",
-      to_email: NOTIFY_EMAIL,
-      message: `New Partner Network application:\n\nName: ${formData.name}\nCompany: ${
-        formData.company || "—"
-      }\nEmail: ${formData.email}\nWhatsApp: ${formData.whatsapp || "—"}\nLinkedIn/Website: ${
-        formData.linkedinOrWebsite || "—"
-      }\nWork type: ${formData.workType || "—"}\nClients: ${
-        formData.clientTypes || "—"
-      }\nOpportunities: ${formData.techOpportunities || "—"}\nNote: ${
-        formData.partnershipNote || "—"
-      }`,
-    }
-
-    emailjs.init(publicKey as string)
-    await emailjs.send(serviceId as string, templateId as string, templateParams)
     return true
   }
 
