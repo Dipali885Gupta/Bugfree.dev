@@ -468,6 +468,7 @@ export const DEFAULT_FOOTER_SERVICES = [
 export const DEFAULT_FOOTER_COMPANY = [
   { label: "About", href: "/#about" },
   { label: "Projects", href: "/projects" },
+  { label: "Partners", href: "/partners" },
   { label: "Process", href: "/#process" },
   { label: "Contact", href: "/#contact" },
 ]

@@ -100,7 +100,7 @@ const ContactSection = ({
           from_email: formData.email,
           project_brief: formData.projectBrief,
           budget: formData.budget || "Not specified",
-          to_email: site.email,
+          to_email: site.bookingEmail || site.email,
           message: `New project enquiry:\n\nName: ${formData.name}\nEmail: ${formData.email}\nBudget: ${
             formData.budget || "Not specified"
           }\nBrief: ${formData.projectBrief}`,
