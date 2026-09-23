@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
 import { SITE } from "@/lib/site"
+import { openWhatsAppNotify } from "@/lib/whatsapp"
 
 const NOTIFY_EMAIL = SITE.bookingEmail // getcodefree.tech@gmail.com
 
@@ -98,6 +99,19 @@ export default function PartnerForm() {
     setIsSubmitting(true)
     try {
       const brief = buildBrief()
+
+      // Open WA first (user-gesture) so popup blockers don't eat it after awaits.
+      openWhatsAppNotify(
+        [
+          "Hi GetCodeFree — Partner Network application",
+          "",
+          `Name: ${formData.name}`,
+          `Email: ${formData.email}`,
+          "",
+          brief,
+        ].join("\n"),
+      )
+
       await saveToDatabase(brief)
 
       try {

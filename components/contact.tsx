@@ -8,6 +8,7 @@ import { Calendar, Mail, Check, ArrowRight } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { DEFAULT_SECTION_HEADERS, DEFAULT_SITE, type SiteConfig } from "@/lib/cms/defaults"
+import { openWhatsAppNotify } from "@/lib/whatsapp"
 import type { SectionHeader } from "@/lib/cms/mappers"
 import type { FaqItem, BudgetOption } from "@/lib/supabase/types"
 
@@ -81,6 +82,20 @@ const ContactSection = ({
     e.preventDefault()
     setIsSubmitting(true)
     try {
+      // Open WA first (user-gesture) so popup blockers don't eat it after awaits.
+      openWhatsAppNotify(
+        [
+          "Hi GetCodeFree — new project brief",
+          "",
+          `Name: ${formData.name}`,
+          `Email: ${formData.email}`,
+          `Budget: ${formData.budget || "Not specified"}`,
+          "",
+          "Brief:",
+          formData.projectBrief,
+        ].join("\n"),
+      )
+
       const supabase = createClient()
       await supabase.from("contact_submissions").insert({
         name: formData.name,
